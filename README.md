@@ -1,0 +1,4 @@
+miner
+=====
+
+Artificial intelligence project.
