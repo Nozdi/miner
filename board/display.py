@@ -24,13 +24,6 @@ class Display(object):
     def size_by_name(self, name):
         return self.quantity * (CELL[name] + CELL['margin']) + CELL['margin']
 
-    # def create_grid(self):
-    #     self.grid = []
-    #     for row in xrange(self.quantity):
-    #         self.grid.append([])
-    #         for column in xrange(self.quantity):
-    #             self.grid[row].append(0)
-
     def initialize_pygame(self):
         pygame.init()
         self.screen = pygame.display.set_mode((self.width, self.height))
