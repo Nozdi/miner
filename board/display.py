@@ -67,7 +67,7 @@ class Display(object):
 class Saper(object):
 
     def __init__(self, grid_quan):
-        self.grid_quan = grid_quan
+        self.grid_quan = grid_quan - 1
         self.img = pygame.image.load('board/saper.png')
         self.cords = [grid_quan-1, grid_quan-1]
 
