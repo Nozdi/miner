@@ -1,51 +1,69 @@
+from settings import CELL, GREY, BLACK, WHITE, RED, YELLOW, GREEN
 import pygame
-
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-
-
-CELL = {
-    "width": 20,
-    "height": 20,
-    "margin": 5,
-}
 
 
 class Display(object):
     def __init__(self, quantity):
         self.quantity = quantity
+        self.menu_height = 50
         self.width = self.size_by_name('width')
-        self.height = self.size_by_name('height')
+        self.height = self.size_by_name('height') + self.menu_height
         self.grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
+
         self.title = "Miner"
+        self.saper = Saper(quantity, "player")  # use here your bot name
         self.done = False
-        self.saper = Saper(quantity)
+
+        self.initialize_pygame()
 
     def size_by_name(self, name):
         return self.quantity * (CELL[name] + CELL['margin']) + CELL['margin']
 
     def initialize_pygame(self):
         pygame.init()
+
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption(self.title)
+
         self.clock = pygame.time.Clock()
 
+        pygame.font.init()
+        self.font = pygame.font.SysFont("comicsansms", max(self.quantity * 2/3, 10))
+
     def draw_grid(self):
-        self.screen.fill(BLACK)
         for row in xrange(self.quantity):
             for column in xrange(self.quantity):
                 rect = pygame.Rect(
                     (CELL['margin'] + CELL['width']) * column + CELL['margin'],
-                    (CELL['margin'] + CELL['height']) * row + CELL['margin'],
+                    ((CELL['margin'] + CELL['height']) * row
+                        + CELL['margin'] + self.menu_height),
                     CELL['width'], CELL['height']
                 )
                 pygame.draw.rect(self.screen, WHITE, rect)
                 if [row, column] == self.saper.cords:
                     self.screen.blit(self.saper.img, rect)
-        pygame.display.flip()
+
+    def draw_menu(self):
+        menu_rect = pygame.Rect(0, 0, self.width, self.menu_height)
+        pygame.draw.rect(self.screen, GREY, menu_rect)
+
+        name = self.font.render("Name: {}".format(self.saper.name), True, BLACK)
+        self.screen.blit(name, (self.width/50, 1))
+
+        current_health = self.font.render(
+            "Health: {}".format(self.saper.health), True, RED
+            )
+        self.screen.blit(current_health, (self.width/50, 25))
+
+        meters = self.font.render("Meters: ", True, BLACK)
+        self.screen.blit(meters, (self.width*0.35, 13))
+        wpos = self.width/2
+        for color in (RED, YELLOW, GREEN):
+            meter = self.font.render("{} %".format(100), True, color)
+            self.screen.blit(meter, (wpos, 13))
+            wpos += self.width/7
 
     def run(self):
-        self.initialize_pygame()
         while not self.done:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -59,17 +77,27 @@ class Display(object):
                         self.saper.up()
                     if event.key == pygame.K_DOWN:
                         self.saper.down()
+
+            self.screen.fill(BLACK)
+
+            # draw here
             self.draw_grid()
+            self.draw_menu()
+
+            pygame.display.flip()
+
             self.clock.tick(20)
         pygame.quit()
 
 
 class Saper(object):
 
-    def __init__(self, grid_quan):
+    def __init__(self, grid_quan, name):
         self.grid_quan = grid_quan - 1
         self.img = pygame.image.load('board/saper.png')
         self.cords = [grid_quan-1, grid_quan-1]
+        self.name = name
+        self.health = 100
 
     def left(self):
         if self.cords[1] > 0:
