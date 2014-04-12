@@ -1,5 +1,7 @@
 from settings import CELL, GREY, BLACK, WHITE, RED, YELLOW, GREEN
 import pygame
+from random import randint
+from mine import *
 
 
 class Display(object):
@@ -9,6 +11,8 @@ class Display(object):
         self.width = self.size_by_name('width')
         self.height = self.size_by_name('height') + self.menu_height
         self.grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
+
+        self.place_mines(quantity, 10)  # 10 is a number of mines
 
         self.title = "Miner"
         self.saper = Saper(quantity, "player")  # use here your bot name
@@ -29,6 +33,78 @@ class Display(object):
 
         pygame.font.init()
         self.font = pygame.font.SysFont("comicsansms", max(self.quantity * 2/3, 10))
+
+    def place_mine(self, grid_quan):
+        position = (randint(0, grid_quan-1), randint(0, grid_quan-1))
+        scheme_number = randint(1, 511)
+        number = randint(1, 3)
+        mine_type = {
+            1: GreenMine,
+            2: YellowMine,
+            3: RedMine
+        }[number]
+        scheme = Scheme(scheme_number, mine_type)
+        absolute_pos = scheme.get_absolute_pos(*position)
+        mines = scheme.fetch_mines(*position)
+        for pos in absolute_pos:
+            try:
+                if self.grid[pos[0]][pos[1]] != 0:
+                    return False
+            except IndexError:
+                return False
+
+            try:
+                if self.grid[pos[0]+1][pos[1]] == number:
+                    return False
+            except IndexError:
+                pass
+
+            try:
+                if self.grid[pos[0]-1][pos[1]] == number:
+                    return False
+            except IndexError:
+                pass
+
+            try:
+                if self.grid[pos[0]][pos[1]+1] == number:
+                    return False
+            except IndexError:
+                pass
+
+            try:
+                if self.grid[pos[0]][pos[1]-1] == number:
+                    return False
+            except IndexError:
+                pass
+
+        for pos in absolute_pos:
+            self.grid[pos[0]][pos[1]] = number
+        return True
+
+    def place_mines(self, grid_quan, number_of_mines):
+        while number_of_mines > 0:
+            while not self.place_mine(grid_quan):
+                pass
+            number_of_mines -= 1
+
+    def debug_grid(self):
+        for row in xrange(self.quantity):
+            for column in xrange(self.quantity):
+                rect = pygame.Rect(
+                    (CELL['margin'] + CELL['width']) * column + CELL['margin'],
+                    ((CELL['margin'] + CELL['height']) * row
+                        + CELL['margin'] + self.menu_height),
+                    CELL['width'], CELL['height']
+                )
+                color = {
+                    0: WHITE,
+                    1: GREEN,
+                    2: YELLOW,
+                    3: RED
+                }[self.grid[row][column]]
+                pygame.draw.rect(self.screen, color, rect)
+                if [row, column] == self.saper.cords:
+                    self.screen.blit(self.saper.img, rect)
 
     def draw_grid(self):
         for row in xrange(self.quantity):
@@ -81,7 +157,8 @@ class Display(object):
             self.screen.fill(BLACK)
 
             # draw here
-            self.draw_grid()
+            #self.draw_grid()
+            self.debug_grid()
             self.draw_menu()
 
             pygame.display.flip()
