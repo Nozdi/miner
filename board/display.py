@@ -1,7 +1,7 @@
 from settings import CELL, GREY, BLACK, WHITE, RED, YELLOW, GREEN
 import pygame
 from random import randint
-from mine import *
+from mine import Scheme, GreenMine, YellowMine, RedMine
 
 
 class Display(object):
@@ -45,37 +45,22 @@ class Display(object):
         }[number]
         scheme = Scheme(scheme_number, mine_type)
         absolute_pos = scheme.get_absolute_pos(*position)
-        mines = scheme.fetch_mines(*position)
         for pos in absolute_pos:
+            # check if no mine is here
             try:
                 if self.grid[pos[0]][pos[1]] != 0:
                     return False
             except IndexError:
                 return False
 
-            try:
-                if self.grid[pos[0]+1][pos[1]] == number:
-                    return False
-            except IndexError:
-                pass
-
-            try:
-                if self.grid[pos[0]-1][pos[1]] == number:
-                    return False
-            except IndexError:
-                pass
-
-            try:
-                if self.grid[pos[0]][pos[1]+1] == number:
-                    return False
-            except IndexError:
-                pass
-
-            try:
-                if self.grid[pos[0]][pos[1]-1] == number:
-                    return False
-            except IndexError:
-                pass
+            # check if the same mine is near (3x3 square) - Moore neighbourhood
+            for i in range(-1, 2):
+                for j in range(-1, 2):
+                    try:
+                        if self.grid[pos[0]+i][pos[1]+j] == number:
+                            return False
+                    except IndexError:
+                        pass
 
         for pos in absolute_pos:
             self.grid[pos[0]][pos[1]] = number
@@ -84,7 +69,7 @@ class Display(object):
     def place_mines(self, grid_quan, number_of_mines):
         while number_of_mines > 0:
             while not self.place_mine(grid_quan):
-                pass
+                continue
             number_of_mines -= 1
 
     def debug_grid(self):
