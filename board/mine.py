@@ -1,4 +1,4 @@
-from settings import RED, YELLOW, GREEN
+from settings import RED, YELLOW, GREEN, WHITE
 
 
 class Scheme(object):
@@ -41,39 +41,41 @@ class Scheme(object):
         )
 
 
-class BaseMine(object):
+class BaseField(object):
 
     def __init__(self, pos_x, pos_y):
         self.pos_x = pos_x
         self.pos_y = pos_y
+        self.color = WHITE
+        self.damage = 0
 
     def __repr__(self):
         return '{}_{}:{}'.format(
             self.__class__.__name__, self.pos_x, self.pos_y)
 
 
-class RedMine(BaseMine):
+class RedMine(BaseField):
 
     def __init__(self, pos_x, pos_y):
         super(RedMine, self).__init__(pos_x, pos_y)
         self.color = RED
-        self.demage = 50
+        self.damage = 50
 
 
-class YellowMine(BaseMine):
+class YellowMine(BaseField):
 
     def __init__(self, pos_x, pos_y):
         super(YellowMine, self).__init__(pos_x, pos_y)
         self.color = YELLOW
-        self.demage = 20
+        self.damage = 20
 
 
-class GreenMine(BaseMine):
+class GreenMine(BaseField):
 
     def __init__(self, pos_x, pos_y):
         super(GreenMine, self).__init__(pos_x, pos_y)
         self.color = GREEN
-        self.demage = 10
+        self.damage = 10
 
 
 if __name__ == '__main__':
