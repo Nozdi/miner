@@ -1,5 +1,5 @@
 from settings import RED, YELLOW, GREEN, WHITE
-
+from random import randint
 
 class Scheme(object):
     visual_generic = "{}|{}|{}\n{}|{}|{}\n{}|{}|{}"
@@ -21,7 +21,7 @@ class Scheme(object):
         for y in range(3):
             for x in range(3):
                 if array[x][y] == '1':
-                    pos.append((x,y))
+                    pos.append((x, y))
         return sorted(pos)
 
     def get_absolute_pos(self, pos_x, pos_y):
@@ -31,23 +31,42 @@ class Scheme(object):
 
         return pos
 
-    # FABRYKA xD
-    def fetch_mines(self, x, y):
-        return [self.mine_class(*elem) for elem in self.get_absolute_pos(x, y)]
-
     def visualise(self):
         return self.visual_generic.format(
             *['x' if elem == '1' else '_' for elem in self.bin_scheme]
         )
 
+    def place(self, grid):
+        grid_len = len(grid)
+        position = (randint(0, grid_len-1), randint(0, grid_len-1))
+        absolute_pos = self.get_absolute_pos(*position)
+        for x, y in absolute_pos:
+            # check if no mine is here
+            try:
+                if grid[x][y] != 0:
+                    return False
+            except IndexError:
+                return False
+
+            # check if the same mine is near (3x3 square) - Moore neighbourhood
+            for i in range(-1, 2):
+                for j in range(-1, 2):
+                    try:
+                        if grid[x+i][y+j] == 0:
+                            continue
+                        if grid[x+i][y+j].color == self.mine_class.color:
+                            return False
+                    except IndexError:
+                        pass
+
+        for x, y in absolute_pos:
+            grid[x][y] = self.mine_class()
+        return True
+
 
 class BaseField(object):
-
-    def __init__(self, pos_x, pos_y):
-        self.pos_x = pos_x
-        self.pos_y = pos_y
-        self.color = WHITE
-        self.damage = 0
+    color = WHITE
+    damage = 0
 
     def __repr__(self):
         return '{}_{}:{}'.format(
@@ -55,27 +74,16 @@ class BaseField(object):
 
 
 class RedMine(BaseField):
-
-    def __init__(self, pos_x, pos_y):
-        super(RedMine, self).__init__(pos_x, pos_y)
-        self.color = RED
-        self.damage = 50
-
+    color = RED
+    damage = 50
 
 class YellowMine(BaseField):
-
-    def __init__(self, pos_x, pos_y):
-        super(YellowMine, self).__init__(pos_x, pos_y)
-        self.color = YELLOW
-        self.damage = 20
-
+    color = YELLOW
+    damage = 20
 
 class GreenMine(BaseField):
-
-    def __init__(self, pos_x, pos_y):
-        super(GreenMine, self).__init__(pos_x, pos_y)
-        self.color = GREEN
-        self.damage = 10
+    color = GREEN
+    damage = 10
 
 
 if __name__ == '__main__':

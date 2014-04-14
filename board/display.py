@@ -1,7 +1,17 @@
-from settings import CELL, GREY, BLACK, WHITE, RED, YELLOW, GREEN
+from settings import (
+    SCHEMES,
+    NUMBER_OF_SCHEMES,
+    CELL,
+    GREY,
+    BLACK,
+    WHITE,
+    RED,
+    YELLOW,
+    GREEN,
+)
 import pygame
-from random import randint
-from mine import Scheme, GreenMine, YellowMine, RedMine
+from random import sample
+from mine import Scheme, BaseField, GreenMine, YellowMine, RedMine
 
 
 class Display(object):
@@ -12,11 +22,15 @@ class Display(object):
         self.height = self.size_by_name('height') + self.menu_height
         self.grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
 
-        self.place_mines(quantity, 10)  # 10 is a number of mines
+        # self.place_mines(10)  # 10 is a number of mines
 
         self.title = "Miner"
         self.saper = Saper(quantity, "player")  # use here your bot name
         self.done = False
+
+        self.schemes = [Scheme(no, mine) for no, mine in
+                        zip(sample(SCHEMES, 3), [GreenMine, YellowMine, RedMine])]
+        self.place_mines()
 
         self.initialize_pygame()
 
@@ -34,43 +48,13 @@ class Display(object):
         pygame.font.init()
         self.font = pygame.font.SysFont("comicsansms", max(self.quantity * 2/3, 10))
 
-    def place_mine(self, grid_quan):
-        position = (randint(0, grid_quan-1), randint(0, grid_quan-1))
-        scheme_number = randint(1, 511)
-        number = randint(1, 3)
-        mine_type = {
-            1: GreenMine,
-            2: YellowMine,
-            3: RedMine
-        }[number]
-        scheme = Scheme(scheme_number, mine_type)
-        absolute_pos = scheme.get_absolute_pos(*position)
-        for pos in absolute_pos:
-            # check if no mine is here
-            try:
-                if self.grid[pos[0]][pos[1]] != 0:
-                    return False
-            except IndexError:
-                return False
-
-            # check if the same mine is near (3x3 square) - Moore neighbourhood
-            for i in range(-1, 2):
-                for j in range(-1, 2):
-                    try:
-                        if self.grid[pos[0]+i][pos[1]+j] == number:
-                            return False
-                    except IndexError:
-                        pass
-
-        for pos in absolute_pos:
-            self.grid[pos[0]][pos[1]] = number
-        return True
-
-    def place_mines(self, grid_quan, number_of_mines):
-        while number_of_mines > 0:
-            while not self.place_mine(grid_quan):
-                continue
-            number_of_mines -= 1
+    def place_mines(self):
+        for scheme in self.schemes:
+            no = NUMBER_OF_SCHEMES
+            while no > 0:
+                while not scheme.place(self.grid):
+                    continue
+                no -= 1
 
     def debug_grid(self):
         for row in xrange(self.quantity):
@@ -81,13 +65,9 @@ class Display(object):
                         + CELL['margin'] + self.menu_height),
                     CELL['width'], CELL['height']
                 )
-                color = {
-                    0: WHITE,
-                    1: GREEN,
-                    2: YELLOW,
-                    3: RED
-                }[self.grid[row][column]]
-                pygame.draw.rect(self.screen, color, rect)
+                if self.grid[row][column] == 0:
+                    self.grid[row][column] = BaseField()
+                pygame.draw.rect(self.screen, self.grid[row][column].color, rect)
                 if [row, column] == self.saper.cords:
                     self.screen.blit(self.saper.img, rect)
 

@@ -10,3 +10,6 @@ CELL = {
     "height": 20,
     "margin": 5,
 }
+
+SCHEMES = (22, 26, 56, 200, 416)
+NUMBER_OF_SCHEMES = 3
