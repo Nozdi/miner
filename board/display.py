@@ -1,10 +1,8 @@
 from settings import (
     SCHEMES,
-    NUMBER_OF_SCHEMES,
     CELL,
     GREY,
     BLACK,
-    WHITE,
     RED,
     YELLOW,
     GREEN,
@@ -54,7 +52,7 @@ class Display(object):
 
     def place_mines(self):
         for scheme in self.schemes:
-            no = NUMBER_OF_SCHEMES
+            no = (self.quantity**2)/20
             while no > 0:
                 while not scheme.place(self.grid):
                     continue
