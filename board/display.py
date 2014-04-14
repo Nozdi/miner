@@ -9,9 +9,15 @@ from settings import (
     YELLOW,
     GREEN,
 )
-import pygame
+from mine import (
+    Scheme,
+    BaseField,
+    GreenMine,
+    YellowMine,
+    RedMine,
+)
 from random import sample
-from mine import Scheme, BaseField, GreenMine, YellowMine, RedMine
+import pygame
 
 
 class Display(object):
@@ -21,8 +27,6 @@ class Display(object):
         self.width = self.size_by_name('width')
         self.height = self.size_by_name('height') + self.menu_height
         self.grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
-
-        # self.place_mines(10)  # 10 is a number of mines
 
         self.title = "Miner"
         self.saper = Saper(quantity, "player")  # use here your bot name
@@ -56,7 +60,7 @@ class Display(object):
                     continue
                 no -= 1
 
-    def debug_grid(self):
+    def draw_grid(self):
         for row in xrange(self.quantity):
             for column in xrange(self.quantity):
                 rect = pygame.Rect(
@@ -68,19 +72,6 @@ class Display(object):
                 if self.grid[row][column] == 0:
                     self.grid[row][column] = BaseField()
                 pygame.draw.rect(self.screen, self.grid[row][column].color, rect)
-                if [row, column] == self.saper.cords:
-                    self.screen.blit(self.saper.img, rect)
-
-    def draw_grid(self):
-        for row in xrange(self.quantity):
-            for column in xrange(self.quantity):
-                rect = pygame.Rect(
-                    (CELL['margin'] + CELL['width']) * column + CELL['margin'],
-                    ((CELL['margin'] + CELL['height']) * row
-                        + CELL['margin'] + self.menu_height),
-                    CELL['width'], CELL['height']
-                )
-                pygame.draw.rect(self.screen, WHITE, rect)
                 if [row, column] == self.saper.cords:
                     self.screen.blit(self.saper.img, rect)
 
@@ -122,8 +113,7 @@ class Display(object):
             self.screen.fill(BLACK)
 
             # draw here
-            #self.draw_grid()
-            self.debug_grid()
+            self.draw_grid()
             self.draw_menu()
 
             pygame.display.flip()

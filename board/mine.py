@@ -1,6 +1,7 @@
 from settings import RED, YELLOW, GREEN, WHITE
 from random import randint
 
+
 class Scheme(object):
     visual_generic = "{}|{}|{}\n{}|{}|{}\n{}|{}|{}"
 
@@ -77,9 +78,11 @@ class RedMine(BaseField):
     color = RED
     damage = 50
 
+
 class YellowMine(BaseField):
     color = YELLOW
     damage = 20
+
 
 class GreenMine(BaseField):
     color = GREEN
