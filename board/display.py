@@ -105,8 +105,11 @@ class Display(object):
                         self.saper.right()
                     elif event.key == pygame.K_UP:
                         self.saper.up()
-                    if event.key == pygame.K_DOWN:
+                    elif event.key == pygame.K_DOWN:
                         self.saper.down()
+
+                    row, column = self.saper.cords
+                    self.saper.health -= self.grid[row][column].damage
 
             self.screen.fill(BLACK)
 
