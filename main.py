@@ -3,5 +3,5 @@
 from board.display import Display
 
 if __name__ == '__main__':
-    disp = Display(10)  # 28
+    disp = Display(25)  # 28
     disp.run()

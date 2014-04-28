@@ -14,7 +14,7 @@ from mine import (
     YellowMine,
     RedMine,
 )
-from random import sample
+from random import sample, randint
 import pygame
 
 
@@ -52,7 +52,8 @@ class Display(object):
 
     def place_mines(self):
         for scheme in self.schemes:
-            no = (self.quantity**2)/20
+            # no = (self.quantity**2)/20
+            no = round(self.quantity/1.5)
             while no > 0:
                 while not scheme.place(self.grid):
                     continue
@@ -92,6 +93,9 @@ class Display(object):
             meter = self.font.render("{} %".format(100), True, color)
             self.screen.blit(meter, (wpos, 13))
             wpos += self.width/7
+
+    def compute_readout(self):
+        x, y = self.saper.cords
 
     def run(self):
         while not self.done:
