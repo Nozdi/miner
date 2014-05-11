@@ -6,6 +6,7 @@ from settings import (
     RED,
     YELLOW,
     GREEN,
+    WHITE,
 )
 from mine import (
     Scheme,
@@ -19,6 +20,7 @@ import pygame
 
 
 class Display(object):
+
     def __init__(self, quantity):
         self.quantity = quantity
         self.menu_height = 50
@@ -29,6 +31,7 @@ class Display(object):
         self.title = "Miner"
         self.saper = Saper(quantity, "player")  # use here your bot name
         self.done = False
+        self.hide_mines = False
 
         self.schemes = [Scheme(no, mine) for no, mine in
                         zip(sample(SCHEMES, 3), [GreenMine, YellowMine, RedMine])]
@@ -71,7 +74,13 @@ class Display(object):
                 )
                 if self.grid[row][column] == 0:
                     self.grid[row][column] = BaseField()
-                pygame.draw.rect(self.screen, self.grid[row][column].color, rect)
+
+                color = self.grid[row][column].color
+                if self.hide_mines:
+                    color = WHITE
+
+                pygame.draw.rect(self.screen, color, rect)
+
                 if [row, column] == self.saper.cords:
                     self.screen.blit(self.saper.img, rect)
 
