@@ -52,8 +52,9 @@ class Display(object):
 
     def place_mines(self):
         for scheme in self.schemes:
-            # no = (self.quantity**2)/20
-            no = round(self.quantity/1.5)
+            no = (self.quantity**2)/30
+            # import ipdb; ipdb.set_trace()
+            # no = round(self.quantity/1.8)
             while no > 0:
                 while not scheme.place(self.grid):
                     continue
