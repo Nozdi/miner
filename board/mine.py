@@ -69,6 +69,22 @@ class BaseField(object):
     color = WHITE
     damage = 0
 
+    def __init__(self):
+        self.radiation = {
+            RED: [0],
+            YELLOW: [0],
+            GREEN: [0],
+        }
+        self.max_radiation = {
+            RED: 0,
+            YELLOW: 0,
+            GREEN: 0,
+        }
+
+    def compute_max(self):
+        for key in self.max_radiation:
+            self.max_radiation[key] = max(self.radiation[key])
+
     def __repr__(self):
         return '{}_{}:{}'.format(
             self.__class__.__name__, self.pos_x, self.pos_y)

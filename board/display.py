@@ -7,6 +7,7 @@ from settings import (
     YELLOW,
     GREEN,
     WHITE,
+    MINE_RANGE,
 )
 from mine import (
     Scheme,
@@ -36,6 +37,8 @@ class Display(object):
         self.schemes = [Scheme(no, mine) for no, mine in
                         zip(sample(SCHEMES, 3), [GreenMine, YellowMine, RedMine])]
         self.place_mines()
+        self.compute_mines()
+        # self.compute_meters()
 
         self.initialize_pygame()
 
@@ -56,12 +59,47 @@ class Display(object):
     def place_mines(self):
         for scheme in self.schemes:
             no = (self.quantity**2)/30
-            # import ipdb; ipdb.set_trace()
             # no = round(self.quantity/1.8)
             while no > 0:
                 while not scheme.place(self.grid):
                     continue
                 no -= 1
+        for row in xrange(self.quantity):
+            for column in xrange(self.quantity):
+                if self.grid[row][column] == 0:
+                    self.grid[row][column] = BaseField()
+
+    def compute_mines(self):
+        for column in xrange(self.quantity):
+            for row in xrange(self.quantity):
+                field = self.grid[row][column]
+                if field.damage:
+                   for i in xrange(-2, 3):
+                        for j in xrange(-2, 3):
+                            if 0 <= row+i < self.quantity and 0 <= column+j < self.quantity:
+                                (self.grid[row+i][column+j].radiation[field.color]
+                                    ).append(MINE_RANGE[2+i][2+j])
+
+        for row in xrange(self.quantity):
+            for column in xrange(self.quantity):
+                # print self.grid[row][column].radiation
+                self.grid[row][column].compute_max()
+
+    def compute_meters(self):
+        x, y = self.saper.cords
+        self.radiations = {
+            RED: [0],
+            YELLOW: [0],
+            GREEN: [0],
+        }
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+                if 0 <= x+i < self.quantity and 0 <= y+j < self.quantity:
+                    for key, val in self.grid[x+i][y+j].max_radiation.items():
+                        self.radiations[key].append(val)
+        for key in self.radiations:
+            self.radiations[key] = reduce(lambda x,y: x+y-x*y, self.radiations[key])
+
 
     def draw_grid(self):
         for row in xrange(self.quantity):
@@ -72,8 +110,6 @@ class Display(object):
                         + CELL['margin'] + self.menu_height),
                     CELL['width'], CELL['height']
                 )
-                if self.grid[row][column] == 0:
-                    self.grid[row][column] = BaseField()
 
                 color = self.grid[row][column].color
                 if self.hide_mines:
@@ -99,15 +135,21 @@ class Display(object):
         meters = self.font.render("Meters: ", True, BLACK)
         self.screen.blit(meters, (self.width*0.35, 13))
         wpos = self.width/2
-        for color in (RED, YELLOW, GREEN):
-            meter = self.font.render("{} %".format(100), True, color)
+
+        self.compute_meters()
+        for color, value in self.radiations.items():
+            meter = self.font.render("{:.2f} %".format(value*100), True, color)
             self.screen.blit(meter, (wpos, 13))
             wpos += self.width/7
 
-    def compute_readout(self):
-        x, y = self.saper.cords
+    def draw_all(self):
+        self.screen.fill(BLACK)
+        self.draw_grid()
+        self.draw_menu()
+        pygame.display.flip()
 
     def run(self):
+        self.draw_all()
         while not self.done:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -121,17 +163,14 @@ class Display(object):
                         self.saper.up()
                     elif event.key == pygame.K_DOWN:
                         self.saper.down()
+                    elif event.key == pygame.K_h:
+                        self.hide_mines = not self.hide_mines
 
                     row, column = self.saper.cords
+
                     self.saper.health -= self.grid[row][column].damage
 
-            self.screen.fill(BLACK)
-
-            # draw here
-            self.draw_grid()
-            self.draw_menu()
-
-            pygame.display.flip()
+                    self.draw_all()
 
             self.clock.tick(20)
         pygame.quit()
