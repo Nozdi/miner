@@ -16,6 +16,12 @@ from mine import (
     YellowMine,
     RedMine,
 )
+from flag import (
+    Flag,
+    RedFlag,
+    YellowFlag,
+    GreenFlag,
+)
 from random import sample, randint
 import pygame
 from copy import deepcopy
@@ -36,12 +42,14 @@ class Display(object):
         self.saper = Saper(quantity, "player")  # use here your bot name
         self.lifes = 3          # put here number of lifes for miner
         self.hide_mines = False
+        self.done = False
 
         self.schemes = [Scheme(no, mine) for no, mine in
                         zip(sample(SCHEMES, 3), [GreenMine, YellowMine, RedMine])]
         self.place_mines()
         self.compute_mines()
         self.compute_meters()
+        self.flags = []
 
         self.grid_copy = deepcopy(self.grid)
 
@@ -124,6 +132,9 @@ class Display(object):
 
                 if [row, column] == self.saper.cords:
                     self.screen.blit(self.saper.img, rect)
+                for flag in self.flags:
+                    if [row, column] == flag.cords:
+                        self.screen.blit(flag.img, rect)
 
     def draw_menu(self):
         menu_rect = pygame.Rect(0, 0, self.width, self.menu_height)
@@ -169,9 +180,18 @@ class Display(object):
         name = self.font.render("GAME OVER".format(), True, RED)
         self.screen.blit(name, (self.width/50, 1))
 
+    def place_flag(self, colour, cords):
+        if colour == GREEN:
+            flag = GreenFlag(cords)
+        elif colour == YELLOW:
+            flag = YellowFlag(cords)
+        elif colour == RED:
+            flag = RedFlag(cords) 
+        self.flags.append(flag)       
+
     def run(self):
         self.draw_all()
-        while self.lifes:
+        while self.lifes and not self.done:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.done = True
@@ -186,6 +206,20 @@ class Display(object):
                         self.saper.down()
                     elif event.key == pygame.K_h:
                         self.hide_mines = not self.hide_mines
+                    elif event.key == pygame.K_1:
+                        self.current_flag_colour = GREEN
+                    elif event.key == pygame.K_2:
+                        self.current_flag_colour = YELLOW
+                    elif event.key == pygame.K_3:
+                        self.current_flag_colour = RED
+                    elif event.key == pygame.K_w:
+                        self.place_flag(self.current_flag_colour, [self.saper.cords[0] - 1, self.saper.cords[1]])
+                    elif event.key == pygame.K_s:
+                        self.place_flag(self.current_flag_colour, [self.saper.cords[0] + 1, self.saper.cords[1]])
+                    elif event.key == pygame.K_a:
+                        self.place_flag(self.current_flag_colour, [self.saper.cords[0], self.saper.cords[1] - 1])
+                    elif event.key == pygame.K_d:
+                        self.place_flag(self.current_flag_colour, [self.saper.cords[0], self.saper.cords[1] + 1])
 
                     row, column = self.saper.cords
 
