@@ -50,7 +50,7 @@ class Display(object):
         self.place_mines()
         self.compute_mines()
         self.compute_meters()
-        self.flags = []
+        self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
 
         self.grid_copy = deepcopy(self.grid)
 
@@ -133,9 +133,8 @@ class Display(object):
 
                 if [row, column] == self.saper.cords:
                     self.screen.blit(self.saper.img, rect)
-                for flag in self.flags:
-                    if [row, column] == flag.cords:
-                        self.screen.blit(flag.img, rect)
+                if self.flag_grid[row][column] != 0:
+                    self.screen.blit(self.flag_grid[row][column].img, rect)
 
     def draw_menu(self):
         menu_rect = pygame.Rect(0, 0, self.width, self.menu_height)
@@ -182,13 +181,19 @@ class Display(object):
         self.screen.blit(name, (self.width/50, 1))
 
     def place_flag(self, colour, cords):
-        if colour == GREEN:
-            flag = GreenFlag(cords)
-        elif colour == YELLOW:
-            flag = YellowFlag(cords)
-        elif colour == RED:
-            flag = RedFlag(cords) 
-        self.flags.append(flag)       
+        if colour == 0:
+            self.remove_flag(cords)
+        elif self.flag_grid[cords[0]][cords[1]] == 0:
+            if colour == GREEN:
+                flag = GreenFlag(cords)
+            elif colour == YELLOW:
+                flag = YellowFlag(cords)
+            elif colour == RED:
+                flag = RedFlag(cords) 
+            self.flag_grid[cords[0]][cords[1]] = flag
+
+    def remove_flag(self, cords):
+        self.flag_grid[cords[0]][cords[1]] = 0    
 
     def run(self):
         self.draw_all()
@@ -207,6 +212,8 @@ class Display(object):
                         self.saper.down()
                     elif event.key == pygame.K_h:
                         self.hide_mines = not self.hide_mines
+                    elif event.key == pygame.K_0:
+                        self.current_flag_colour = 0
                     elif event.key == pygame.K_1:
                         self.current_flag_colour = GREEN
                     elif event.key == pygame.K_2:
@@ -235,6 +242,7 @@ class Display(object):
                         self.saper.health = 100
                         self.saper.reset_position()
                         self.grid_copy = deepcopy(self.grid)
+                        self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
 
                     self.draw_all()
 
