@@ -43,6 +43,7 @@ class Display(object):
         self.lifes = 3          # put here number of lifes for miner
         self.hide_mines = False
         self.done = False
+        self.current_flag_colour = GREEN
 
         self.schemes = [Scheme(no, mine) for no, mine in
                         zip(sample(SCHEMES, 3), [GreenMine, YellowMine, RedMine])]
@@ -213,13 +214,17 @@ class Display(object):
                     elif event.key == pygame.K_3:
                         self.current_flag_colour = RED
                     elif event.key == pygame.K_w:
-                        self.place_flag(self.current_flag_colour, [self.saper.cords[0] - 1, self.saper.cords[1]])
+                        if self.saper.cords[0] > 0:
+                            self.place_flag(self.current_flag_colour, [self.saper.cords[0] - 1, self.saper.cords[1]])
                     elif event.key == pygame.K_s:
-                        self.place_flag(self.current_flag_colour, [self.saper.cords[0] + 1, self.saper.cords[1]])
+                        if self.saper.cords[0] < self.quantity-1:
+                            self.place_flag(self.current_flag_colour, [self.saper.cords[0] + 1, self.saper.cords[1]])
                     elif event.key == pygame.K_a:
-                        self.place_flag(self.current_flag_colour, [self.saper.cords[0], self.saper.cords[1] - 1])
+                        if self.saper.cords[1] > 0:
+                            self.place_flag(self.current_flag_colour, [self.saper.cords[0], self.saper.cords[1] - 1])
                     elif event.key == pygame.K_d:
-                        self.place_flag(self.current_flag_colour, [self.saper.cords[0], self.saper.cords[1] + 1])
+                        if self.saper.cords[1] < self.quantity-1:
+                            self.place_flag(self.current_flag_colour, [self.saper.cords[0], self.saper.cords[1] + 1])
 
                     row, column = self.saper.cords
 
