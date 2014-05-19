@@ -195,6 +195,14 @@ class Display(object):
     def remove_flag(self, cords):
         self.flag_grid[cords[0]][cords[1]] = 0    
 
+    def detonate(self):
+        for y in xrange(self.quantity):
+            for x in xrange(self.quantity):
+                if self.flag_grid[x][y]:
+                    if self.flag_grid[x][y].color == self.grid[x][y].color:
+                        self.grid[x][y] = BaseField()
+                    self.remove_flag((x,y))
+
     def run(self):
         self.draw_all()
         while self.lifes and not self.done:
@@ -220,6 +228,8 @@ class Display(object):
                         self.current_flag_colour = YELLOW
                     elif event.key == pygame.K_3:
                         self.current_flag_colour = RED
+                    elif event.key == pygame.K_q:
+                        self.detonate()
                     elif event.key == pygame.K_w:
                         if self.saper.cords[0] > 0:
                             self.place_flag(self.current_flag_colour, [self.saper.cords[0] - 1, self.saper.cords[1]])
