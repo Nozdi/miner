@@ -49,10 +49,10 @@ class Display(object):
         self.schemes = [Scheme(no, mine) for no, mine in
                         zip(sample(SCHEMES, 3), [GreenMine, YellowMine, RedMine])]
         self.place_mines()
+        self.grid_copy = deepcopy(self.grid)
         self.compute_mines()
         self.compute_meters()
         self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
-        self.grid_copy = deepcopy(self.grid)
         self.initialize_pygame()
 
     def size_by_name(self, name):
@@ -85,18 +85,18 @@ class Display(object):
     def compute_mines(self):
         for column in xrange(self.quantity):
             for row in xrange(self.quantity):
-                field = self.grid[row][column]
+                field = self.grid_copy[row][column]
                 if field.damage:
                    for i in xrange(-2, 3):
                         for j in xrange(-2, 3):
                             if 0 <= row+i < self.quantity and 0 <= column+j < self.quantity:
-                                (self.grid[row+i][column+j].radiation[field.color]
+                                (self.grid_copy[row+i][column+j].radiation[field.color]
                                     ).append(MINE_RANGE[2+i][2+j])
 
         for row in xrange(self.quantity):
             for column in xrange(self.quantity):
-                # print self.grid[row][column].radiation
-                self.grid[row][column].compute_max()
+                # print self.grid_copy[row][column].radiation
+                self.grid_copy[row][column].compute_max()
 
     def compute_meters(self):
         x, y = self.saper.cords
@@ -108,7 +108,7 @@ class Display(object):
         for i in range(-1, 2):
             for j in range(-1, 2):
                 if 0 <= x+i < self.quantity and 0 <= y+j < self.quantity:
-                    for key, val in self.grid[x+i][y+j].max_radiation.items():
+                    for key, val in self.grid_copy[x+i][y+j].max_radiation.items():
                         self.radiations[key].append(val)
         for key in self.radiations:
             self.radiations[key] = reduce(lambda x,y: x+y-x*y, self.radiations[key])
