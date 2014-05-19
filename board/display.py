@@ -37,23 +37,22 @@ class Display(object):
         self.width = self.size_by_name('width')
         self.height = self.size_by_name('height') + self.menu_height
         self.grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
-
+		
         self.title = "Miner"
         self.saper = Saper(quantity, "player")  # use here your bot name
         self.lifes = 3          # put here number of lifes for miner
         self.hide_mines = False
         self.done = False
         self.current_flag_colour = GREEN
-
+        self.no_of_schemes = (self.quantity**2)/30
+        self.no_of_flags = round((self.no_of_schemes *3)*1.1)
         self.schemes = [Scheme(no, mine) for no, mine in
                         zip(sample(SCHEMES, 3), [GreenMine, YellowMine, RedMine])]
         self.place_mines()
         self.compute_mines()
         self.compute_meters()
         self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
-
         self.grid_copy = deepcopy(self.grid)
-
         self.initialize_pygame()
 
     def size_by_name(self, name):
@@ -125,7 +124,7 @@ class Display(object):
                     CELL['width'], CELL['height']
                 )
 
-                color = self.grid[row][column].color
+                color = self.grid_copy[row][column].color
                 if self.hide_mines:
                     color = WHITE
 
@@ -146,7 +145,12 @@ class Display(object):
         current_lifes = self.font.render(
             "Lifes: {}".format(self.lifes), True, BLACK
             )
-        self.screen.blit(current_lifes, (self.width/2, 35))
+        self.screen.blit(current_lifes, (self.width*0.35, 25))
+
+        current_flags = self.font.render(
+            "Flags: {}".format(self.no_of_flags), True, BLACK
+            )
+        self.screen.blit(current_flags, (self.width/2, 25))
 
         current_health = self.font.render(
             "Health: {}".format(self.saper.health), True, RED
@@ -154,13 +158,13 @@ class Display(object):
         self.screen.blit(current_health, (self.width/50, 25))
 
         meters = self.font.render("Meters: ", True, BLACK)
-        self.screen.blit(meters, (self.width*0.35, 13))
+        self.screen.blit(meters, (self.width*0.35, 1))
         wpos = self.width/2
 
         self.compute_meters()
         for color, value in self.radiations.items():
             meter = self.font.render("{:.2f} %".format(value*100), True, color)
-            self.screen.blit(meter, (wpos, 13))
+            self.screen.blit(meter, (wpos, 1))
             wpos += self.width/7
 
     def draw_all(self):
@@ -191,17 +195,20 @@ class Display(object):
             elif colour == RED:
                 flag = RedFlag(cords) 
             self.flag_grid[cords[0]][cords[1]] = flag
+            self.no_of_flags -= 1
 
     def remove_flag(self, cords):
-        self.flag_grid[cords[0]][cords[1]] = 0    
+        if self.flag_grid[cords[0]][cords[1]] != 0:
+            self.no_of_flags += 1
+            self.flag_grid[cords[0]][cords[1]] = 0    
 
     def detonate(self):
         for y in xrange(self.quantity):
             for x in xrange(self.quantity):
                 if self.flag_grid[x][y]:
-                    if self.flag_grid[x][y].color == self.grid[x][y].color:
-                        self.grid[x][y] = BaseField()
-                    self.remove_flag((x,y))
+                    if self.flag_grid[x][y].color == self.grid_copy[x][y].color:
+                        self.grid_copy[x][y] = BaseField()
+                    self.flag_grid[x][y] = 0 
 
     def run(self):
         self.draw_all()
@@ -245,7 +252,7 @@ class Display(object):
 
                     row, column = self.saper.cords
 
-                    self.saper.health -= self.grid[row][column].damage
+                    self.saper.health -= self.grid_copy[row][column].damage
 
                     if self.saper.health <= 0:
                         self.lifes -= 1
@@ -253,6 +260,7 @@ class Display(object):
                         self.saper.reset_position()
                         self.grid_copy = deepcopy(self.grid)
                         self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
+                        self.no_of_flags = round((self.no_of_schemes *3)*1.1)
 
                     self.draw_all()
 
