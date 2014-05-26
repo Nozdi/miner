@@ -70,6 +70,9 @@ class BaseField(object):
     damage = 0
 
     def __init__(self):
+        self.reset_radiation()
+
+    def reset_radiation(self):
         self.radiation = {
             RED: [0],
             YELLOW: [0],

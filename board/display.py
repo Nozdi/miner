@@ -82,7 +82,13 @@ class Display(object):
                 if self.grid[row][column] == 0:
                     self.grid[row][column] = BaseField()
 
+    def reset_mines(self):
+        for row in self.grid_copy:
+            for mine in row:
+                mine.reset_radiation()
+
     def compute_mines(self):
+        self.reset_mines()
         for column in xrange(self.quantity):
             for row in xrange(self.quantity):
                 field = self.grid_copy[row][column]
@@ -187,7 +193,7 @@ class Display(object):
     def place_flag(self, colour, cords):
         if colour == 0:
             self.remove_flag(cords)
-        elif self.flag_grid[cords[0]][cords[1]] == 0:
+        elif self.flag_grid[cords[0]][cords[1]] == 0 and self.no_of_flags > 0:
             if colour == GREEN:
                 flag = GreenFlag(cords)
             elif colour == YELLOW:
@@ -196,9 +202,6 @@ class Display(object):
                 flag = RedFlag(cords)
             self.flag_grid[cords[0]][cords[1]] = flag
             self.no_of_flags -= 1
-            if self.no_of_flags <=0:
-                return False
-
 
     def remove_flag(self, cords):
         if self.flag_grid[cords[0]][cords[1]] != 0:
@@ -212,7 +215,7 @@ class Display(object):
                     if self.flag_grid[x][y].color == self.grid_copy[x][y].color:
                         self.grid_copy[x][y] = BaseField()
                     self.flag_grid[x][y] = 0
-                    self.compute_meters()
+        self.compute_mines()
 
     def run(self):
         self.draw_all()
@@ -259,7 +262,7 @@ class Display(object):
                     self.saper.health -= self.grid_copy[row][column].damage
                     if self.grid_copy[row][column].damage > 0:
                         self.grid_copy[row][column] = BaseField()
-                        self.compute_meters()
+                        self.compute_mines()
 
                     if self.saper.health <= 0:
                         self.lifes -= 1
@@ -267,9 +270,8 @@ class Display(object):
                         self.saper.reset_position()
                         self.grid_copy = deepcopy(self.grid)
                         self.compute_mines()
-                        self.compute_meters()
                         self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
-                        self.no_of_flags = round((self.no_of_schemes *3)*1.1)
+                        self.no_of_flags = round((self.no_of_schemes *9)*1.1)
 
                     self.draw_all()
 
