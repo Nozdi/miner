@@ -45,6 +45,7 @@ class Display(object):
         self.done = False
         self.current_flag_colour = GREEN
         self.no_of_schemes = (self.quantity**2)/30
+        self.no_of_mines = self.no_of_schemes*9
         self.no_of_flags = round((self.no_of_schemes *9)*1.1)
         self.schemes = [Scheme(no, mine) for no, mine in
                         zip(sample(SCHEMES, 3), [GreenMine, YellowMine, RedMine])]
@@ -158,6 +159,11 @@ class Display(object):
             )
         self.screen.blit(current_flags, (self.width/2, 25))
 
+        current_mines = self.font.render(
+            "Mines: {}".format(self.no_of_mines), True, BLACK
+            )
+        self.screen.blit(current_mines, (self.width*0.75, 25))
+
         current_health = self.font.render(
             "Health: {}".format(self.saper.health), True, RED
             )
@@ -214,6 +220,7 @@ class Display(object):
                 if self.flag_grid[x][y]:
                     if self.flag_grid[x][y].color == self.grid_copy[x][y].color:
                         self.grid_copy[x][y] = BaseField()
+                        self.no_of_mines -= 1
                     self.flag_grid[x][y] = 0
         self.compute_mines()
 
@@ -262,6 +269,7 @@ class Display(object):
                     self.saper.health -= self.grid_copy[row][column].damage
                     if self.grid_copy[row][column].damage > 0:
                         self.grid_copy[row][column] = BaseField()
+                        self.no_of_mines -= 1
                         self.compute_mines()
 
                     if self.saper.health <= 0:
@@ -272,6 +280,7 @@ class Display(object):
                         self.compute_mines()
                         self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
                         self.no_of_flags = round((self.no_of_schemes *9)*1.1)
+                        self.no_of_mines = self.no_of_schemes *9
 
                     self.draw_all()
 
