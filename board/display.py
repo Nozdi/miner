@@ -256,6 +256,7 @@ class Display(object):
                     self.saper.health -= self.grid_copy[row][column].damage
                     if self.grid_copy[row][column].damage > 0:
                         self.grid_copy[row][column] = BaseField()
+                        self.compute_meters()
 
                     if self.saper.health <= 0:
                         self.lifes -= 1
