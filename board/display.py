@@ -155,7 +155,7 @@ class Display(object):
         self.screen.blit(current_lifes, (self.width*0.35, 25))
 
         current_flags = self.font.render(
-            "Flags: {}".format(self.no_of_flags), True, BLACK
+            "Flags: {:.0f}".format(self.no_of_flags), True, BLACK
             )
         self.screen.blit(current_flags, (self.width/2, 25))
 
