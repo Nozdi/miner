@@ -37,7 +37,7 @@ class Display(object):
         self.width = self.size_by_name('width')
         self.height = self.size_by_name('height') + self.menu_height
         self.grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
-		
+
         self.title = "Miner"
         self.saper = Saper(quantity, "player")  # use here your bot name
         self.lifes = 3          # put here number of lifes for miner
@@ -193,14 +193,14 @@ class Display(object):
             elif colour == YELLOW:
                 flag = YellowFlag(cords)
             elif colour == RED:
-                flag = RedFlag(cords) 
+                flag = RedFlag(cords)
             self.flag_grid[cords[0]][cords[1]] = flag
             self.no_of_flags -= 1
 
     def remove_flag(self, cords):
         if self.flag_grid[cords[0]][cords[1]] != 0:
             self.no_of_flags += 1
-            self.flag_grid[cords[0]][cords[1]] = 0    
+            self.flag_grid[cords[0]][cords[1]] = 0
 
     def detonate(self):
         for y in xrange(self.quantity):
@@ -208,7 +208,8 @@ class Display(object):
                 if self.flag_grid[x][y]:
                     if self.flag_grid[x][y].color == self.grid_copy[x][y].color:
                         self.grid_copy[x][y] = BaseField()
-                    self.flag_grid[x][y] = 0 
+                    self.flag_grid[x][y] = 0
+                    self.compute_meters()
 
     def run(self):
         self.draw_all()
