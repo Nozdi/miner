@@ -253,12 +253,16 @@ class Display(object):
                     row, column = self.saper.cords
 
                     self.saper.health -= self.grid_copy[row][column].damage
+                    if self.grid_copy[row][column].damage > 0:
+                        self.grid_copy[row][column] = BaseField()
 
                     if self.saper.health <= 0:
                         self.lifes -= 1
                         self.saper.health = 100
                         self.saper.reset_position()
                         self.grid_copy = deepcopy(self.grid)
+                        self.compute_mines()
+                        self.compute_meters()
                         self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
                         self.no_of_flags = round((self.no_of_schemes *3)*1.1)
 
