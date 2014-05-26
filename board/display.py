@@ -45,7 +45,7 @@ class Display(object):
         self.done = False
         self.current_flag_colour = GREEN
         self.no_of_schemes = (self.quantity**2)/30
-        self.no_of_flags = round((self.no_of_schemes *3)*1.1)
+        self.no_of_flags = round((self.no_of_schemes *9)*1.1)
         self.schemes = [Scheme(no, mine) for no, mine in
                         zip(sample(SCHEMES, 3), [GreenMine, YellowMine, RedMine])]
         self.place_mines()
@@ -196,6 +196,9 @@ class Display(object):
                 flag = RedFlag(cords)
             self.flag_grid[cords[0]][cords[1]] = flag
             self.no_of_flags -= 1
+            if self.no_of_flags <=0:
+                return False
+
 
     def remove_flag(self, cords):
         if self.flag_grid[cords[0]][cords[1]] != 0:

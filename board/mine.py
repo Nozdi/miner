@@ -44,7 +44,7 @@ class Scheme(object):
         for x, y in absolute_pos:
             # check if no mine is here
             try:
-                if grid[x][y] != 0 and x != grid_len-1 and y != grid_len-1:
+                if grid[x][y] != 0 and (x != grid_len-1 or y != grid_len-1):
                     return False
             except IndexError:
                 return False
