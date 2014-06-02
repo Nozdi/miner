@@ -39,21 +39,21 @@ class Display(object):
         self.grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
 
         self.title = "Miner"
-        self.saper = Saper(quantity, "player")  # use here your bot name
         self.lifes = 3          # put here number of lifes for miner
         self.hide_mines = False
         self.done = False
-        self.current_flag_colour = GREEN
         self.no_of_schemes = (self.quantity**2)/30
         self.no_of_mines = self.no_of_schemes*9
-        self.no_of_flags = round((self.no_of_schemes *9)*1.1)
+        #self.no_of_flags = round((self.no_of_schemes *9)*1.1)
         self.schemes = [Scheme(no, mine) for no, mine in
                         zip(sample(SCHEMES, 3), [GreenMine, YellowMine, RedMine])]
         self.place_mines()
         self.grid_copy = deepcopy(self.grid)
+        self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
+        self.saper = Saper(quantity, "player", self.grid_copy, self.flag_grid) # use here your bot name
+        self.saper.no_of_flags = round((self.no_of_schemes *9)*1.1)
         self.compute_mines()
         self.compute_meters()
-        self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
         self.initialize_pygame()
 
     def size_by_name(self, name):
@@ -120,7 +120,6 @@ class Display(object):
         for key in self.radiations:
             self.radiations[key] = reduce(lambda x,y: x+y-x*y, self.radiations[key])
 
-
     def draw_grid(self):
         for row in xrange(self.quantity):
             for column in xrange(self.quantity):
@@ -155,7 +154,7 @@ class Display(object):
         self.screen.blit(current_lifes, (self.width*0.35, 25))
 
         current_flags = self.font.render(
-            "Flags: {:.0f}".format(self.no_of_flags), True, BLACK
+            "Flags: {:.0f}".format(self.saper.no_of_flags), True, BLACK
             )
         self.screen.blit(current_flags, (self.width/2, 25))
 
@@ -196,34 +195,6 @@ class Display(object):
         name = self.font.render("GAME OVER".format(), True, RED)
         self.screen.blit(name, (self.width/50, 1))
 
-    def place_flag(self, colour, cords):
-        if colour == 0:
-            self.remove_flag(cords)
-        elif self.flag_grid[cords[0]][cords[1]] == 0 and self.no_of_flags > 0:
-            if colour == GREEN:
-                flag = GreenFlag(cords)
-            elif colour == YELLOW:
-                flag = YellowFlag(cords)
-            elif colour == RED:
-                flag = RedFlag(cords)
-            self.flag_grid[cords[0]][cords[1]] = flag
-            self.no_of_flags -= 1
-
-    def remove_flag(self, cords):
-        if self.flag_grid[cords[0]][cords[1]] != 0:
-            self.no_of_flags += 1
-            self.flag_grid[cords[0]][cords[1]] = 0
-
-    def detonate(self):
-        for y in xrange(self.quantity):
-            for x in xrange(self.quantity):
-                if self.flag_grid[x][y]:
-                    if self.flag_grid[x][y].color == self.grid_copy[x][y].color:
-                        self.grid_copy[x][y] = BaseField()
-                        self.no_of_mines -= 1
-                    self.flag_grid[x][y] = 0
-        self.compute_mines()
-
     def run(self):
         self.draw_all()
         while self.lifes and not self.done:
@@ -242,27 +213,28 @@ class Display(object):
                     elif event.key == pygame.K_h:
                         self.hide_mines = not self.hide_mines
                     elif event.key == pygame.K_0:
-                        self.current_flag_colour = 0
+                        self.saper.current_flag_colour = 0
                     elif event.key == pygame.K_1:
-                        self.current_flag_colour = GREEN
+                        self.saper.current_flag_colour = GREEN
                     elif event.key == pygame.K_2:
-                        self.current_flag_colour = YELLOW
+                        self.saper.current_flag_colour = YELLOW
                     elif event.key == pygame.K_3:
-                        self.current_flag_colour = RED
+                        self.saper.current_flag_colour = RED
                     elif event.key == pygame.K_q:
-                        self.detonate()
+                        self.no_of_mines -= self.saper.detonate()
+                        self.compute_mines()
                     elif event.key == pygame.K_w:
                         if self.saper.cords[0] > 0:
-                            self.place_flag(self.current_flag_colour, [self.saper.cords[0] - 1, self.saper.cords[1]])
+                            self.saper.place_flag_up()
                     elif event.key == pygame.K_s:
                         if self.saper.cords[0] < self.quantity-1:
-                            self.place_flag(self.current_flag_colour, [self.saper.cords[0] + 1, self.saper.cords[1]])
+                            self.saper.place_flag_down()
                     elif event.key == pygame.K_a:
                         if self.saper.cords[1] > 0:
-                            self.place_flag(self.current_flag_colour, [self.saper.cords[0], self.saper.cords[1] - 1])
+                            self.saper.place_flag_left()
                     elif event.key == pygame.K_d:
                         if self.saper.cords[1] < self.quantity-1:
-                            self.place_flag(self.current_flag_colour, [self.saper.cords[0], self.saper.cords[1] + 1])
+                            self.saper.place_flag_right()
 
                     row, column = self.saper.cords
 
@@ -279,7 +251,7 @@ class Display(object):
                         self.grid_copy = deepcopy(self.grid)
                         self.compute_mines()
                         self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
-                        self.no_of_flags = round((self.no_of_schemes *9)*1.1)
+                        self.saper.no_of_flags = round((self.no_of_schemes *9)*1.1)
                         self.no_of_mines = self.no_of_schemes *9
 
                     self.draw_all()
@@ -292,12 +264,15 @@ class Display(object):
 
 class Saper(object):
 
-    def __init__(self, grid_quan, name):
+    def __init__(self, grid_quan, name, grid, flag_grid):
+        self.grid = grid
+        self.flag_grid = flag_grid
         self.grid_quan = grid_quan - 1
         self.img = pygame.image.load('board/saper.png')
         self.cords = [grid_quan-1, grid_quan-1]
         self.name = name
         self.health = 100
+        self.current_flag_colour = GREEN
 
     def left(self):
         if self.cords[1] > 0:
@@ -314,6 +289,47 @@ class Saper(object):
     def down(self):
         if self.cords[0] < self.grid_quan:
             self.cords[0] += 1
+
+    def place_flag_left(self):
+        self._place_flag([self.cords[0], self.cords[1] - 1])
+
+    def place_flag_right(self):
+        self._place_flag([self.cords[0], self.cords[1] + 1])
+
+    def place_flag_up(self):
+        self._place_flag([self.cords[0] - 1, self.cords[1]])
+
+    def place_flag_down(self):
+        self._place_flag([self.cords[0] + 1, self.cords[1]])
+
+    def _place_flag(self, cords):
+        if self.current_flag_colour == 0:
+            self.remove_flag(cords)
+        elif self.flag_grid[cords[0]][cords[1]] == 0 and self.no_of_flags > 0:
+            if self.current_flag_colour == GREEN:
+                flag = GreenFlag(cords)
+            elif self.current_flag_colour == YELLOW:
+                flag = YellowFlag(cords)
+            elif self.current_flag_colour == RED:
+                flag = RedFlag(cords)
+            self.flag_grid[cords[0]][cords[1]] = flag
+            self.no_of_flags -= 1
+
+    def remove_flag(self, cords):
+        if self.flag_grid[cords[0]][cords[1]] != 0:
+            self.no_of_flags += 1
+            self.flag_grid[cords[0]][cords[1]] = 0
+
+    def detonate(self):
+        detonated_mines = 0
+        for y in xrange(self.grid_quan + 1):
+            for x in xrange(self.grid_quan + 1):
+                if self.flag_grid[x][y]:
+                    if self.flag_grid[x][y].color == self.grid[x][y].color:
+                        self.grid[x][y] = BaseField()
+                        detonated_mines += 1
+                    self.flag_grid[x][y] = 0
+        return detonated_mines
 
     def reset_position(self):
         self.cords = [self.grid_quan, self.grid_quan]
