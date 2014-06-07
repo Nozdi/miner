@@ -153,10 +153,10 @@ class Display(object):
         name = self.font.render("Name: {}".format(self.saper.name), True, BLACK)
         self.screen.blit(name, (self.width/50, 1))
 
-        current_lifes = self.font.render(
-            "Lifes: {}".format(self.saper.lifes), True, BLACK
+        current_attempts = self.font.render(
+            "Attempts: {}".format(self.saper.attempts), True, BLACK
             )
-        self.screen.blit(current_lifes, (self.width*0.35, 25))
+        self.screen.blit(current_attempts, (self.width*0.25, 25))
 
         current_flags = self.font.render(
             "Flags: {:.0f}".format(self.saper.no_of_flags), True, BLACK
@@ -187,7 +187,7 @@ class Display(object):
         self.screen.fill(BLACK)
         self.draw_grid()
 
-        if self.saper.lifes > 0:
+        if self.no_of_mines > 0:
             self.draw_menu()
         else:
             self.draw_gameover()
@@ -203,7 +203,7 @@ class Display(object):
 
     def run(self):
         self.draw_all()
-        while self.saper.lifes and not self.done:
+        while self.no_of_mines > 0:
             self.no_of_mines -= self.saper.detonate()
             self.compute_mines()
             self.saper.move()
@@ -218,7 +218,7 @@ class Display(object):
                 self.compute_mines()
 
             if self.saper.health <= 0:
-                self.saper.lifes -= 1
+                self.saper.attempts += 1
                 self.saper.reset_health()
                 self.saper.reset_position()
                 self.grid_copy = deepcopy(self.grid)

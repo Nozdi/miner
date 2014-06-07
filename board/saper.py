@@ -39,7 +39,7 @@ class Saper(object):
         self.name = name
         self.health = 1000
         self.old_health = 1000
-        self.lifes = 100
+        self.attempts = 0
         self.current_flag_colour = GREEN
         self.grid_knowledge = [[0.5 for r in xrange(self.grid_quan + 1)]
                                for c in xrange(self.grid_quan + 1)]
