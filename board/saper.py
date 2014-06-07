@@ -1,5 +1,6 @@
 import pygame
 from time import sleep
+from copy import deepcopy
 from settings import (
     SCHEMES,
     CELL,
@@ -36,11 +37,13 @@ class Saper(object):
         self.img = pygame.image.load('board/saper.png')
         self.cords = [grid_quan-1, grid_quan-1]
         self.name = name
-        self.health = 100
-        self.old_health = 100
+        self.health = 1000
+        self.old_health = 1000
         self.lifes = 100
         self.current_flag_colour = GREEN
         self.grid_knowledge = [[0.5 for r in xrange(self.grid_quan + 1)]
+                               for c in xrange(self.grid_quan + 1)]
+        self.knowledge_copy = [[0.5 for r in xrange(self.grid_quan + 1)]
                                for c in xrange(self.grid_quan + 1)]
         self.visited = [[0 for r in xrange(self.grid_quan + 1)]
                                for c in xrange(self.grid_quan + 1)]
@@ -102,16 +105,16 @@ class Saper(object):
             self.flag_grid[cords[0]][cords[1]] = 0
 
     def check_left(self):
-        return self.grid_knowledge[self.cords[0]][self.cords[1] - 1]
+        return self.knowledge_copy[self.cords[0]][self.cords[1] - 1]
 
     def check_right(self):
-        return self.grid_knowledge[self.cords[0]][self.cords[1] + 1]
+        return self.knowledge_copy[self.cords[0]][self.cords[1] + 1]
 
     def check_up(self):
-        return self.grid_knowledge[self.cords[0] - 1][self.cords[1]]
+        return self.knowledge_copy[self.cords[0] - 1][self.cords[1]]
 
     def check_down(self):
-        return self.grid_knowledge[self.cords[0] + 1][self.cords[1]]
+        return self.knowledge_copy[self.cords[0] + 1][self.cords[1]]
 
     def check_go_left(self):
         if self.cords[1] > 0:
@@ -169,6 +172,7 @@ class Saper(object):
                     if self.flag_grid[x][y].color == self.grid[x][y].color:
                         self.grid[x][y] = BaseField()
                         detonated_mines += 1
+                        self.knowledge_copy[x][y] = 0
                     self.flag_grid[x][y] = 0
         return detonated_mines
 
@@ -176,19 +180,23 @@ class Saper(object):
         self.cords = [self.grid_quan, self.grid_quan]
 
     def reset_health(self):
-        self.health = 100
-        self.old_health = 100
+        self.health = 1000
+        self.old_health = 1000
+        self.knowledge_copy = deepcopy(self.grid_knowledge)
 
     def lose_health(self, damage):
         self.old_health = self.health
         self.health -= damage
 
     def move(self):
+        if self.visited[self.cords[0]][self.cords[1]] == 0:
+            if self.am_i_on_mine():
+                self.grid_knowledge[self.cords[0]][self.cords[1]] = 1
+            else:
+                self.grid_knowledge[self.cords[0]][self.cords[1]] = 0
         self.visited[self.cords[0]][self.cords[1]] += 1
-        if self.am_i_on_mine():
-            self.grid_knowledge[self.cords[0]][self.cords[1]] = 1
-        else:
-            self.grid_knowledge[self.cords[0]][self.cords[1]] = 0
+        self.knowledge_copy[self.cords[0]][self.cords[1]] = 0
+
         neighbour_value = {'left':self.check_go_left(),
                            'right':self.check_go_right(),
                            'up':self.check_go_up(),
@@ -223,3 +231,20 @@ class Saper(object):
 
     def set_meters(self, meters):
         self.meters = meters
+
+    def diplay_grid(self):
+        brzydki_grid = [[78 for r in xrange(self.grid_quan)]
+                         for c in xrange(self.grid_quan)]        
+        for row in xrange(self.grid_quan):
+            for column in xrange(self.grid_quan):
+                if self.grid[row][column].color == WHITE:
+                    brzydki_grid[row][column] = 0
+                elif self.grid[row][column].color == GREEN:
+                    brzydki_grid[row][column] = 1
+                elif self.grid[row][column].color == YELLOW:
+                    brzydki_grid[row][column] = 2
+                elif self.grid[row][column].color == RED:
+                    brzydki_grid[row][column] = 3
+                else:
+                    brzydki_grid[row][column] = 4
+        print brzydki_grid

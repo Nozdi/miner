@@ -50,7 +50,7 @@ class Display(object):
         self.place_mines()
         self.grid_copy = deepcopy(self.grid)
         self.saper = Saper(quantity, "player", self.grid_copy) # use here your bot name
-        self.saper.no_of_flags = round((self.no_of_schemes *9)*1.1)
+        self.saper.no_of_flags = round((self.no_of_schemes *9)*1.5)
         self.compute_mines()
         self.compute_meters()
         self.initialize_pygame()
@@ -83,7 +83,7 @@ class Display(object):
                     self.grid[row][column] = BaseField()
 
     def reset_mines(self):
-        for row in self.grid_copy:
+        for row in self.saper.grid:
             for mine in row:
                 mine.reset_radiation()
 
@@ -91,18 +91,18 @@ class Display(object):
         self.reset_mines()
         for column in xrange(self.quantity):
             for row in xrange(self.quantity):
-                field = self.grid_copy[row][column]
+                field = self.saper.grid[row][column]
                 if field.damage:
                    for i in xrange(-2, 3):
                         for j in xrange(-2, 3):
                             if 0 <= row+i < self.quantity and 0 <= column+j < self.quantity:
-                                (self.grid_copy[row+i][column+j].radiation[field.color]
+                                (self.saper.grid[row+i][column+j].radiation[field.color]
                                     ).append(MINE_RANGE[2+i][2+j])
 
         for row in xrange(self.quantity):
             for column in xrange(self.quantity):
                 # print self.grid_copy[row][column].radiation
-                self.grid_copy[row][column].compute_max()
+                self.saper.grid[row][column].compute_max()
 
     def compute_meters(self):
         x, y = self.saper.cords
@@ -114,7 +114,7 @@ class Display(object):
         for i in range(-1, 2):
             for j in range(-1, 2):
                 if 0 <= x+i < self.quantity and 0 <= y+j < self.quantity:
-                    for key, val in self.grid_copy[x+i][y+j].max_radiation.items():
+                    for key, val in self.saper.grid[x+i][y+j].max_radiation.items():
                         self.radiations[key].append(val)
         for key in self.radiations:
             self.radiations[key] = reduce(lambda x,y: x+y-x*y, self.radiations[key])
@@ -130,7 +130,12 @@ class Display(object):
                     CELL['width'], CELL['height']
                 )
 
-                color = self.grid_copy[row][column].color
+                # if (self.saper.grid_knowledge[row][column] == 1):
+                if (self.saper.grid_knowledge[row][column] == 0 and 
+                        self.saper.grid[row][column].color != WHITE):
+                    color = BLACK
+                else:
+                    color = self.saper.grid[row][column].color
                 if self.hide_mines:
                     color = WHITE
 
@@ -206,9 +211,9 @@ class Display(object):
 
             row, column = self.saper.cords
 
-            self.saper.lose_health(self.grid_copy[row][column].damage)
-            if self.grid_copy[row][column].damage > 0:
-                self.grid_copy[row][column] = BaseField()
+            self.saper.lose_health(self.saper.grid[row][column].damage)
+            if self.saper.grid[row][column].damage > 0:
+                self.saper.grid[row][column] = BaseField()
                 self.no_of_mines -= 1
                 self.compute_mines()
 
@@ -217,9 +222,10 @@ class Display(object):
                 self.saper.reset_health()
                 self.saper.reset_position()
                 self.grid_copy = deepcopy(self.grid)
+                self.saper.grid = self.grid_copy
                 self.compute_mines()
                 self.saper.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
-                self.saper.no_of_flags = round((self.no_of_schemes *9)*1.1)
+                self.saper.no_of_flags = round((self.no_of_schemes *9)*1.5)
                 self.no_of_mines = self.no_of_schemes *9
 
             self.draw_all()
