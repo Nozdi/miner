@@ -51,7 +51,7 @@ class Display(object):
         self.grid_copy = deepcopy(self.grid)
         self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
         self.saper = Saper(quantity, name, self.grid_copy, self.flag_grid) # use here your bot name
-        self.saper.no_of_flags = round((self.no_of_schemes *9)*1.1)
+        self.saper.no_of_flags = round((self.no_of_schemes *9)*1.5)
         self.compute_mines()
         self.compute_meters()
         self.initialize_pygame()
@@ -253,13 +253,13 @@ class Display(object):
                     self.grid_copy = deepcopy(self.grid)
                     self.compute_mines()
                     self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
-                    self.saper.no_of_flags = round((self.no_of_schemes *9)*1.1)
+                    self.saper.no_of_flags = round((self.no_of_schemes *9)*1.5)
                     self.no_of_mines = self.no_of_schemes *9
                 self.saper.moved = False
 
                 self.draw_all()
 
-            self.clock.tick(50)
+            self.clock.tick(150)
 
         pygame.quit()
 
