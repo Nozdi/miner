@@ -1,0 +1,13 @@
+#flag color
+
+possibilities:
+    place_flag: [red, yellow, green]
+
+learning_set:
+    -
+        -   place_flag: red
+        -   True
+    -
+        -   place_flag: yellow
+        -   False
+

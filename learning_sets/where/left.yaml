@@ -1,0 +1,15 @@
+#where place
+
+possibilities:
+    place_flag: [left, right, up, down]
+
+learning_set:
+    -
+        -   place_flag: right
+        -   True
+    -
+        -   place_flag: up
+        -   True
+    -
+        -   place_flag: left
+        -   False

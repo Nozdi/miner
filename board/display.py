@@ -17,15 +17,15 @@ from mine import (
     RedMine,
 )
 from flag import (
-    Flag,
     RedFlag,
     YellowFlag,
     GreenFlag,
 )
-from random import sample, randint
+from random import sample
 import pygame
 from copy import deepcopy
 from time import sleep
+from bot import bot
 
 
 class Display(object):
@@ -38,6 +38,7 @@ class Display(object):
         self.height = self.size_by_name('height') + self.menu_height
         self.grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
 
+        self.bot_mode = False
         self.title = "Miner"
         self.lifes = 3          # put here number of lifes for miner
         self.hide_mines = False
@@ -50,8 +51,8 @@ class Display(object):
         self.place_mines()
         self.grid_copy = deepcopy(self.grid)
         self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
-        self.saper = Saper(quantity, "player", self.grid_copy, self.flag_grid) # use here your bot name
-        self.saper.no_of_flags = round((self.no_of_schemes *9)*1.1)
+        self.saper = Saper(quantity, "Symbolic_bot", self.grid_copy, self.flag_grid)
+        self.saper.no_of_flags = round((self.no_of_schemes * 9)*1.1)
         self.compute_mines()
         self.compute_meters()
         self.initialize_pygame()
@@ -106,7 +107,7 @@ class Display(object):
                 self.grid_copy[row][column].compute_max()
 
     def compute_meters(self):
-        x, y = self.saper.cords
+        x, y = self.saper.coords
         self.radiations = {
             RED: [0],
             YELLOW: [0],
@@ -136,7 +137,7 @@ class Display(object):
 
                 pygame.draw.rect(self.screen, color, rect)
 
-                if [row, column] == self.saper.cords:
+                if [row, column] == self.saper.coords:
                     self.screen.blit(self.saper.img, rect)
                 if self.flag_grid[row][column] != 0:
                     self.screen.blit(self.flag_grid[row][column].img, rect)
@@ -195,70 +196,86 @@ class Display(object):
         name = self.font.render("GAME OVER".format(), True, RED)
         self.screen.blit(name, (self.width/50, 1))
 
+    def game(self):
+        row, column = self.saper.coords
+
+        self.saper.health -= self.grid_copy[row][column].damage
+        if self.grid_copy[row][column].damage > 0:
+            self.grid_copy[row][column] = BaseField()
+            self.no_of_mines -= 1
+            self.compute_mines()
+
+        if self.saper.health <= 0:
+            self.lifes -= 1
+            self.saper.health = 100
+            self.saper.reset_position()
+            self.grid_copy = deepcopy(self.grid)
+            self.compute_mines()
+            self.flag_grid = [[0 for r in xrange(self.quantity)]
+                              for c in xrange(self.quantity)]
+            self.saper.no_of_flags = round((self.no_of_schemes * 9)*1.1)
+            self.no_of_mines = self.no_of_schemes * 9
+
+        self.draw_all()
+
     def run(self):
         self.draw_all()
         while self.lifes and not self.done:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.done = True
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFT:
-                        self.saper.left()
-                    elif event.key == pygame.K_RIGHT:
-                        self.saper.right()
-                    elif event.key == pygame.K_UP:
-                        self.saper.up()
-                    elif event.key == pygame.K_DOWN:
-                        self.saper.down()
-                    elif event.key == pygame.K_h:
-                        self.hide_mines = not self.hide_mines
-                    elif event.key == pygame.K_0:
-                        self.saper.current_flag_colour = 0
-                    elif event.key == pygame.K_1:
-                        self.saper.current_flag_colour = GREEN
-                    elif event.key == pygame.K_2:
-                        self.saper.current_flag_colour = YELLOW
-                    elif event.key == pygame.K_3:
-                        self.saper.current_flag_colour = RED
-                    elif event.key == pygame.K_q:
-                        self.no_of_mines -= self.saper.detonate()
-                        self.compute_mines()
-                    elif event.key == pygame.K_w:
-                        if self.saper.cords[0] > 0:
-                            self.saper.place_flag_up()
-                    elif event.key == pygame.K_s:
-                        if self.saper.cords[0] < self.quantity-1:
-                            self.saper.place_flag_down()
-                    elif event.key == pygame.K_a:
-                        if self.saper.cords[1] > 0:
-                            self.saper.place_flag_left()
-                    elif event.key == pygame.K_d:
-                        if self.saper.cords[1] < self.quantity-1:
-                            self.saper.place_flag_right()
-
-                    row, column = self.saper.cords
-
-                    self.saper.health -= self.grid_copy[row][column].damage
-                    if self.grid_copy[row][column].damage > 0:
-                        self.grid_copy[row][column] = BaseField()
-                        self.no_of_mines -= 1
-                        self.compute_mines()
-
-                    if self.saper.health <= 0:
-                        self.lifes -= 1
-                        self.saper.health = 100
-                        self.saper.reset_position()
-                        self.grid_copy = deepcopy(self.grid)
-                        self.compute_mines()
-                        self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
-                        self.saper.no_of_flags = round((self.no_of_schemes *9)*1.1)
-                        self.no_of_mines = self.no_of_schemes *9
-
-                    self.draw_all()
-
+            if not self.bot_mode:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        self.done = True
+                    elif event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_LEFT:
+                            self.saper.left()
+                        elif event.key == pygame.K_RIGHT:
+                            self.saper.right()
+                        elif event.key == pygame.K_UP:
+                            self.saper.up()
+                        elif event.key == pygame.K_DOWN:
+                            self.saper.down()
+                        elif event.key == pygame.K_h:
+                            self.hide_mines = not self.hide_mines
+                        elif event.key == pygame.K_0:
+                            self.saper.current_flag_colour = 0
+                        elif event.key == pygame.K_1:
+                            self.saper.current_flag_colour = GREEN
+                        elif event.key == pygame.K_2:
+                            self.saper.current_flag_colour = YELLOW
+                        elif event.key == pygame.K_3:
+                            self.saper.current_flag_colour = RED
+                        elif event.key == pygame.K_q:
+                            self.no_of_mines -= self.saper.detonate()
+                            self.compute_mines()
+                        elif event.key == pygame.K_w:
+                            if self.saper.coords[0] > 0:
+                                self.saper.place_flag_up()
+                        elif event.key == pygame.K_s:
+                            if self.saper.coords[0] < self.quantity-1:
+                                self.saper.place_flag_down()
+                        elif event.key == pygame.K_a:
+                            if self.saper.coords[1] > 0:
+                                self.saper.place_flag_left()
+                        elif event.key == pygame.K_d:
+                            if self.saper.coords[1] < self.quantity-1:
+                                self.saper.place_flag_right()
+                        elif event.key == pygame.K_b:
+                            self.bot_mode = True
+                            self.bot = bot(self.saper)
+                        self.game()
+            else:
+                for event in pygame.event.get():
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_b:
+                        self.bot_mode = False
+                try:
+                    next(self.bot)
+                except StopIteration:
+                    print("Bot nie wie co dalej :(")
+                    break
+                self.game()
             self.clock.tick(20)
 
-        sleep(2)
+        # sleep(2)
         pygame.quit()
 
 
@@ -269,56 +286,56 @@ class Saper(object):
         self.flag_grid = flag_grid
         self.grid_quan = grid_quan - 1
         self.img = pygame.image.load('board/saper.png')
-        self.cords = [grid_quan-1, grid_quan-1]
+        self.coords = [grid_quan-1, grid_quan-1]
         self.name = name
         self.health = 100
         self.current_flag_colour = GREEN
 
     def left(self):
-        if self.cords[1] > 0:
-            self.cords[1] -= 1
+        if self.coords[1] > 0:
+            self.coords[1] -= 1
 
     def right(self):
-        if self.cords[1] < self.grid_quan:
-            self.cords[1] += 1
+        if self.coords[1] < self.grid_quan:
+            self.coords[1] += 1
 
     def up(self):
-        if self.cords[0] > 0:
-            self.cords[0] -= 1
+        if self.coords[0] > 0:
+            self.coords[0] -= 1
 
     def down(self):
-        if self.cords[0] < self.grid_quan:
-            self.cords[0] += 1
+        if self.coords[0] < self.grid_quan:
+            self.coords[0] += 1
 
     def place_flag_left(self):
-        self._place_flag([self.cords[0], self.cords[1] - 1])
+        self._place_flag([self.coords[0], self.coords[1] - 1])
 
     def place_flag_right(self):
-        self._place_flag([self.cords[0], self.cords[1] + 1])
+        self._place_flag([self.coords[0], self.coords[1] + 1])
 
     def place_flag_up(self):
-        self._place_flag([self.cords[0] - 1, self.cords[1]])
+        self._place_flag([self.coords[0] - 1, self.coords[1]])
 
     def place_flag_down(self):
-        self._place_flag([self.cords[0] + 1, self.cords[1]])
+        self._place_flag([self.coords[0] + 1, self.coords[1]])
 
-    def _place_flag(self, cords):
+    def _place_flag(self, coords):
         if self.current_flag_colour == 0:
-            self.remove_flag(cords)
-        elif self.flag_grid[cords[0]][cords[1]] == 0 and self.no_of_flags > 0:
+            self.remove_flag(coords)
+        elif self.flag_grid[coords[0]][coords[1]] == 0 and self.no_of_flags > 0:
             if self.current_flag_colour == GREEN:
-                flag = GreenFlag(cords)
+                flag = GreenFlag(coords)
             elif self.current_flag_colour == YELLOW:
-                flag = YellowFlag(cords)
+                flag = YellowFlag(coords)
             elif self.current_flag_colour == RED:
-                flag = RedFlag(cords)
-            self.flag_grid[cords[0]][cords[1]] = flag
+                flag = RedFlag(coords)
+            self.flag_grid[coords[0]][coords[1]] = flag
             self.no_of_flags -= 1
 
-    def remove_flag(self, cords):
-        if self.flag_grid[cords[0]][cords[1]] != 0:
+    def remove_flag(self, coords):
+        if self.flag_grid[coords[0]][coords[1]] != 0:
             self.no_of_flags += 1
-            self.flag_grid[cords[0]][cords[1]] = 0
+            self.flag_grid[coords[0]][coords[1]] = 0
 
     def detonate(self):
         detonated_mines = 0
@@ -332,4 +349,4 @@ class Saper(object):
         return detonated_mines
 
     def reset_position(self):
-        self.cords = [self.grid_quan, self.grid_quan]
+        self.coords = [self.grid_quan, self.grid_quan]

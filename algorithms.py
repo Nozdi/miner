@@ -14,12 +14,12 @@ def load_yaml(filename):
 
 
 class SymbolicLearningSystem(object):
-    def __init__(self, possibilities_dict, learning_set):
+    def __init__(self, possibilities, learning_set):
         """
         :param possibilities: dict with name and possibilities
         :param learning_set: list of tuples with learning set (dict, bool)
         """
-        self.possibilities = possibilities_dict
+        self.possibilities = possibilities
         self.learning_set = learning_set
         self.general = [dict.fromkeys(self.possibilities, True)]
         self.specific = [dict.fromkeys(self.possibilities, False)]
@@ -27,6 +27,10 @@ class SymbolicLearningSystem(object):
     @classmethod
     def from_yamls(cls, possibilities, learning, *args, **kwargs):
         return cls(load_yaml(possibilities), load_yaml(learning))
+
+    @classmethod
+    def from_yaml(cls, yaml_filename, *args, **kwargs):
+        return cls(**load_yaml(yaml_filename))
 
     @staticmethod
     def check_classification(item, example, test):
@@ -152,6 +156,11 @@ class SymbolicLearningSystem(object):
             else:
                 self.generalize(example)
 
+        if not self.specific:
+            return self.general
+        else:
+            return self.specific
+
 
 if __name__ == '__main__':
     possibilities = {
@@ -184,22 +193,23 @@ if __name__ == '__main__':
             'ksztalt': 'kolo',
 
         }, False),
-        ({
-            'kolor': 'czerwony',
-            'rozmiar': 'maly',
-            'ksztalt': 'kolo',
+        # ({
+        #     'kolor': 'czerwony',
+        #     'rozmiar': 'maly',
+        #     'ksztalt': 'kolo',
 
-        }, True),
-        ({
-            'kolor': 'czerwony',
-            'rozmiar': 'sredni',
-            'ksztalt': 'kolo',
+        # }, True),
+        # ({
+        #     'kolor': 'czerwony',
+        #     'rozmiar': 'sredni',
+        #     'ksztalt': 'kolo',
 
-        }, False),
+        # }, False),
     ]
 
     # sls = SymbolicLearningSystem(possibilities, learning_set)
-    sls = SymbolicLearningSystem.from_yamls("possibilities.yaml", "learning_set.yaml")
+    sls = SymbolicLearningSystem.from_yamls("learning_sets/possibilities.yaml",
+                                            "learning_sets/learning_set.yaml")
     sls.learn()
-    print "General: ", sls.general
-    print "Specific: ", sls.specific
+    # print "General: ", sls.general
+    # print "Specific: ", sls.specific
