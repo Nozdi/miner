@@ -241,13 +241,13 @@ class Display(object):
                         elif event.key == pygame.K_h:
                             self.hide_mines = not self.hide_mines
                         elif event.key == pygame.K_0:
-                            self.saper.current_flag_colour = 0
+                            self.saper.no_flag()
                         elif event.key == pygame.K_1:
-                            self.saper.current_flag_colour = GREEN
+                            self.saper.green_flag()
                         elif event.key == pygame.K_2:
-                            self.saper.current_flag_colour = YELLOW
+                            self.saper.yellow_flag()
                         elif event.key == pygame.K_3:
-                            self.saper.current_flag_colour = RED
+                            self.saper.red_flag()
                         elif event.key == pygame.K_q:
                             self.no_of_mines -= self.saper.detonate()
                             self.compute_mines()
@@ -293,6 +293,18 @@ class Saper(object):
         self.coords = [grid_quan-1, grid_quan-1]
         self.name = name
         self.health = 100
+        self.current_flag_colour = GREEN
+
+    def no_flag(self):
+        self.current_flag_colour = 0
+
+    def red_flag(self):
+        self.current_flag_colour = RED
+
+    def yellow_flag(self):
+        self.current_flag_colour = YELLOW
+
+    def green_flag(self):
         self.current_flag_colour = GREEN
 
     def left(self):

@@ -162,6 +162,9 @@ class SymbolicLearningSystem(object):
             return self.specific
 
 
+
+
+
 if __name__ == '__main__':
     possibilities = {
         'kolor': ['czerwony', 'niebieski'],
