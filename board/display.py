@@ -25,7 +25,7 @@ from random import sample
 import pygame
 from copy import deepcopy
 from time import sleep
-from bot import bot
+from bot import Bot
 
 
 class Display(object):
@@ -38,7 +38,6 @@ class Display(object):
         self.height = self.size_by_name('height') + self.menu_height
         self.grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
 
-        self.bot_mode = False
         self.title = "Miner"
         self.lifes = 3          # put here number of lifes for miner
         self.hide_mines = False
@@ -53,6 +52,11 @@ class Display(object):
         self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
         self.saper = Saper(quantity, "Symbolic_bot", self.grid_copy, self.flag_grid)
         self.saper.no_of_flags = round((self.no_of_schemes * 9)*1.1)
+
+        #bot
+        self.bot_mode = False
+        self.bot = Bot(self.saper, self)
+
         self.compute_mines()
         self.compute_meters()
         self.initialize_pygame()
@@ -261,14 +265,14 @@ class Display(object):
                                 self.saper.place_flag_right()
                         elif event.key == pygame.K_b:
                             self.bot_mode = True
-                            self.bot = bot(self.saper)
+                            self.bot_move = self.bot.run()
                         self.game()
             else:
                 for event in pygame.event.get():
                     if event.type == pygame.KEYDOWN and event.key == pygame.K_b:
                         self.bot_mode = False
                 try:
-                    next(self.bot)
+                    next(self.bot_move)
                 except StopIteration:
                     print("Bot nie wie co dalej :(")
                     break
