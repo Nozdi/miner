@@ -236,35 +236,39 @@ class Display(object):
                         if self.saper.cords[1] < self.quantity-1:
                             self.saper.place_flag_right()
 
-                    row, column = self.saper.cords
+            if self.saper.moved:
+                row, column = self.saper.cords
 
-                    self.saper.health -= self.grid_copy[row][column].damage
-                    if self.grid_copy[row][column].damage > 0:
-                        self.grid_copy[row][column] = BaseField()
-                        self.no_of_mines -= 1
-                        self.compute_mines()
+                self.saper.health -= self.grid_copy[row][column].damage
+                if self.grid_copy[row][column].damage > 0:
+                    self.grid_copy[row][column] = BaseField()
+                    self.no_of_mines -= 1
+                    self.compute_mines()
 
-                    if self.saper.health <= 0:
-                        self.lifes -= 1
-                        self.saper.health = 100
-                        self.saper.reset_position()
-                        self.grid_copy = deepcopy(self.grid)
-                        self.compute_mines()
-                        self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
-                        self.saper.no_of_flags = round((self.no_of_schemes *9)*1.1)
-                        self.no_of_mines = self.no_of_schemes *9
+                if self.saper.health <= 0:
+                    self.lifes -= 1
+                    self.saper.health = 100
+                    self.saper.reset_position()
+                    self.grid_copy = deepcopy(self.grid)
+                    self.compute_mines()
+                    self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
+                    self.saper.no_of_flags = round((self.no_of_schemes *9)*1.1)
+                    self.no_of_mines = self.no_of_schemes *9
+                self.saper.moved = False
 
-                    self.draw_all()
+                self.draw_all()
 
-            self.clock.tick(20)
+            self.clock.tick(30)
 
         sleep(2)
         pygame.quit()
 
 
+from pygame.event import Event
 class Saper(object):
 
     def __init__(self, grid_quan, name, grid, flag_grid):
+        self.moved = False
         self.grid = grid
         self.flag_grid = flag_grid
         self.grid_quan = grid_quan - 1
@@ -273,22 +277,32 @@ class Saper(object):
         self.name = name
         self.health = 100
         self.current_flag_colour = GREEN
+        #self.radiations = radiations
+
+    def ll(self):
+        pygame.event.post(Event(pygame.KEYDOWN, {'key': pygame.K_SPACE}))
+        pygame.event.post(Event(pygame.KEYUP, {'key': pygame.K_SPACE}))
+
 
     def left(self):
         if self.cords[1] > 0:
             self.cords[1] -= 1
+        self.moved = True
 
     def right(self):
         if self.cords[1] < self.grid_quan:
             self.cords[1] += 1
+        self.moved = True
 
     def up(self):
         if self.cords[0] > 0:
             self.cords[0] -= 1
+        self.moved = True
 
     def down(self):
         if self.cords[0] < self.grid_quan:
             self.cords[0] += 1
+        self.moved = True
 
     def place_flag_left(self):
         self._place_flag([self.cords[0], self.cords[1] - 1])
@@ -314,11 +328,13 @@ class Saper(object):
                 flag = RedFlag(cords)
             self.flag_grid[cords[0]][cords[1]] = flag
             self.no_of_flags -= 1
+        self.moved = True
 
     def remove_flag(self, cords):
         if self.flag_grid[cords[0]][cords[1]] != 0:
             self.no_of_flags += 1
             self.flag_grid[cords[0]][cords[1]] = 0
+        self.moved = True
 
     def detonate(self):
         detonated_mines = 0
@@ -329,6 +345,7 @@ class Saper(object):
                         self.grid[x][y] = BaseField()
                         detonated_mines += 1
                     self.flag_grid[x][y] = 0
+        self.moved = True
         return detonated_mines
 
     def reset_position(self):

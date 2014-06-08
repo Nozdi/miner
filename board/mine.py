@@ -6,7 +6,7 @@ class Scheme(object):
     visual_generic = "{}|{}|{}\n{}|{}|{}\n{}|{}|{}"
 
     def __init__(self, scheme, mine_class):
-        if not (0 < scheme < 512):
+        if not (0 <= scheme < 512):
             raise ValueError("Scheme must be between 1 and 511")
         self.scheme = scheme
         self.mine_class = mine_class
