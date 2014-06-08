@@ -5,6 +5,13 @@
         * generalization
         * elimination of candidates
 """
+import yaml
+
+
+def load_yaml(filename):
+    with open(filename) as yaml_file:
+        return yaml.load(yaml_file.read())
+
 
 class SymbolicLearningSystem(object):
     def __init__(self, possibilities_dict, learning_set):
@@ -16,6 +23,10 @@ class SymbolicLearningSystem(object):
         self.learning_set = learning_set
         self.general = [dict.fromkeys(self.possibilities, True)]
         self.specific = [dict.fromkeys(self.possibilities, False)]
+
+    @classmethod
+    def from_yamls(cls, possibilities, learning, *args, **kwargs):
+        return cls(load_yaml(possibilities), load_yaml(learning))
 
     @staticmethod
     def check_classification(item, example, test):
@@ -73,7 +84,11 @@ class SymbolicLearningSystem(object):
 
     @staticmethod
     def find_by_true(fun, iterable):
-        search = fun([hypo.values().count(True) for hypo in iterable])
+        counted = [hypo.values().count(True) for hypo in iterable]
+        if not counted:
+            return []
+
+        search = fun(counted)
         return [elem for elem in iterable if elem.values().count(True) == search]
 
     def find_minimal_general(self):
@@ -126,8 +141,6 @@ class SymbolicLearningSystem(object):
 
         # Remove less general hypotheses than others from S;
         self.general = self.find_minimal_general()
-        print "General: ", self.general
-        print "Specific: ", self.specific
 
     def learn(self):
         """
@@ -138,8 +151,6 @@ class SymbolicLearningSystem(object):
                 self.specialize(example)
             else:
                 self.generalize(example)
-
-            print
 
 
 if __name__ == '__main__':
@@ -187,52 +198,8 @@ if __name__ == '__main__':
         }, False),
     ]
 
-    # possibilities = {
-    #     'sky': ['sunny', 'rainy'],
-    #     'temp': ['warm', 'cold'],
-    #     'humid': ['normal', 'high'],
-    #     'wind': ['strong'],
-    #     'water': ['warm', 'cool'],
-    #     'forecst': ['same', 'change'],
-    # }
-
-    # learning_set = [
-    #     ({
-    #         'sky': 'sunny',
-    #         'temp': 'warm',
-    #         'humid': 'normal',
-    #         'wind': 'strong',
-    #         'water': 'warm',
-    #         'forecst': 'same',
-    #     }, True),
-    #     ({
-    #         'sky': 'sunny',
-    #         'temp': 'warm',
-    #         'humid': 'high',
-    #         'wind': 'strong',
-    #         'water': 'warm',
-    #         'forecst': 'same',
-    #     }, True),
-    #     ({
-    #         'sky': 'rainy',
-    #         'temp': 'cold',
-    #         'humid': 'high',
-    #         'wind': 'strong',
-    #         'water': 'warm',
-    #         'forecst': 'change',
-    #     }, False),
-    #     ({
-    #         'sky': 'sunny',
-    #         'temp': 'warm',
-    #         'humid': 'high',
-    #         'wind': 'strong',
-    #         'water': 'cool',
-    #         'forecst': 'change',
-    #     }, False),
-    # ]
-
-
-    sls = SymbolicLearningSystem(possibilities, learning_set)
+    # sls = SymbolicLearningSystem(possibilities, learning_set)
+    sls = SymbolicLearningSystem.from_yamls("possibilities.yaml", "learning_set.yaml")
     sls.learn()
-    # print "General: ", sls.general
-    # print "Specific: ", sls.specific
+    print "General: ", sls.general
+    print "Specific: ", sls.specific

@@ -1,0 +1,31 @@
+--- # learning_set
+-
+    -   kolor: czerwony
+        rozmiar: duzy
+        ksztalt: kolo
+    -   True
+-
+    -   kolor: czerwony
+        rozmiar: maly
+        ksztalt: kwadrat
+    -   False
+-
+    -   kolor: czerwony
+        rozmiar: maly
+        ksztalt: kolo
+    -   True
+-
+    -   kolor: niebieski
+        rozmiar: duzy
+        ksztalt: kolo
+    -   False
+-
+    -   kolor: czerwony
+        rozmiar: maly
+        ksztalt: kolo
+    -   True
+-
+    -   kolor: czerwony
+        rozmiar: sredni
+        ksztalt: kolo
+    -   False
