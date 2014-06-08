@@ -133,10 +133,10 @@ class Display(object):
                     CELL['width'], CELL['height']
                 )
 
-                # if (self.saper.grid_knowledge[row][column] == 1):
-                if (self.saper.grid_knowledge[row][column] == 0 and
-                        self.saper.grid[row][column].colour != WHITE):
-                    colour = BLACK
+                if (self.saper.grid_knowledge[row][column] == 0.5):
+                # if (self.saper.grid_knowledge[row][column] == 0 and
+                #         self.saper.grid[row][column].colour != WHITE):
+                    colour = GREY
                 else:
                     colour = self.saper.grid[row][column].colour
                 if self.hide_mines:
