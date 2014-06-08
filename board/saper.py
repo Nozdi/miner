@@ -32,13 +32,14 @@ class Saper(object):
     def __init__(self, grid_quan, name, grid):
         self.grid = grid
         self.grid_quan = grid_quan - 1
-        self.flag_grid = [[0 for r in xrange(self.grid_quan+1)] 
-                           for c in xrange(self.grid_quan+1)]
+        self.flag_grid = [[0 for r in xrange(self.grid_quan+1)]
+                          for c in xrange(self.grid_quan+1)]
         self.img = pygame.image.load('board/saper.png')
-        self.cords = [grid_quan-1, grid_quan-1]
+        self.coords = [grid_quan-1, grid_quan-1]
         self.name = name
-        self.health = 1000
-        self.old_health = 1000
+        self.MAX_HEALTH = 1000
+        self.health = self.MAX_HEALTH
+        self.old_health = self.MAX_HEALTH
         self.attempts = 0
         self.current_flag_colour = GREEN
         self.grid_knowledge = [[0.5 for r in xrange(self.grid_quan + 1)]
@@ -46,50 +47,51 @@ class Saper(object):
         self.knowledge_copy = [[0.5 for r in xrange(self.grid_quan + 1)]
                                for c in xrange(self.grid_quan + 1)]
         self.visited = [[0 for r in xrange(self.grid_quan + 1)]
-                               for c in xrange(self.grid_quan + 1)]
+                        for c in xrange(self.grid_quan + 1)]
 
     def left(self):
-        if self.cords[1] > 0:
-            self.cords[1] -= 1
+        if self.coords[1] > 0:
+            self.coords[1] -= 1
 
     def right(self):
-        if self.cords[1] < self.grid_quan +1:
-            self.cords[1] += 1
+        if self.coords[1] < self.grid_quan + 1:
+            self.coords[1] += 1
 
     def up(self):
-        if self.cords[0] > 0:
-            self.cords[0] -= 1
+        if self.coords[0] > 0:
+            self.coords[0] -= 1
 
     def down(self):
-        if self.cords[0] < self.grid_quan+1:
-            self.cords[0] += 1
+        if self.coords[0] < self.grid_quan+1:
+            self.coords[0] += 1
 
     def place_flag_left(self):
-        self._place_flag([self.cords[0], self.cords[1] - 1])
+        self._place_flag([self.coords[0], self.coords[1] - 1])
 
     def place_flag_right(self):
-        self._place_flag([self.cords[0], self.cords[1] + 1])
+        self._place_flag([self.coords[0], self.coords[1] + 1])
 
     def place_flag_up(self):
-        self._place_flag([self.cords[0] - 1, self.cords[1]])
+        self._place_flag([self.coords[0] - 1, self.coords[1]])
 
     def place_flag_down(self):
-        self._place_flag([self.cords[0] + 1, self.cords[1]])
+        self._place_flag([self.coords[0] + 1, self.coords[1]])
 
-    def _place_flag(self, cords):
+    def _place_flag(self, coords):
         if self.current_flag_colour == 0:
-            self.remove_flag(cords)
-        elif self.flag_grid[cords[0]][cords[1]] == 0 and self.no_of_flags > 0:
+            self.remove_flag(coords)
+        elif (self.flag_grid[coords[0]][coords[1]] == 0
+              and self.no_of_flags > 0):
             if self.current_flag_colour == GREEN:
-                flag = GreenFlag(cords)
+                flag = GreenFlag(coords)
             elif self.current_flag_colour == YELLOW:
-                flag = YellowFlag(cords)
+                flag = YellowFlag(coords)
             elif self.current_flag_colour == RED:
-                flag = RedFlag(cords)
-            self.flag_grid[cords[0]][cords[1]] = flag
+                flag = RedFlag(coords)
+            self.flag_grid[coords[0]][coords[1]] = flag
             self.no_of_flags -= 1
 
-    def place_flag_direction (self, direction):
+    def place_flag_direction(self, direction):
         if direction == 'left':
             self.place_flag_left()
         elif direction == 'right':
@@ -99,67 +101,67 @@ class Saper(object):
         elif direction == 'down':
             self.place_flag_down()
 
-    def remove_flag(self, cords):
-        if self.flag_grid[cords[0]][cords[1]] != 0:
+    def remove_flag(self, coords):
+        if self.flag_grid[coords[0]][coords[1]] != 0:
             self.no_of_flags += 1
-            self.flag_grid[cords[0]][cords[1]] = 0
+            self.flag_grid[coords[0]][coords[1]] = 0
 
     def check_left(self):
-        return self.knowledge_copy[self.cords[0]][self.cords[1] - 1]
+        return self.knowledge_copy[self.coords[0]][self.coords[1] - 1]
 
     def check_right(self):
-        return self.knowledge_copy[self.cords[0]][self.cords[1] + 1]
+        return self.knowledge_copy[self.coords[0]][self.coords[1] + 1]
 
     def check_up(self):
-        return self.knowledge_copy[self.cords[0] - 1][self.cords[1]]
+        return self.knowledge_copy[self.coords[0] - 1][self.coords[1]]
 
     def check_down(self):
-        return self.knowledge_copy[self.cords[0] + 1][self.cords[1]]
+        return self.knowledge_copy[self.coords[0] + 1][self.coords[1]]
 
     def check_go_left(self):
-        if self.cords[1] > 0:
+        if self.coords[1] > 0:
             if self.check_left() < 1:
-                return self.visited[self.cords[0]][self.cords[1]-1]
-        return float('inf')           
+                return self.visited[self.coords[0]][self.coords[1]-1]
+        return float('inf')
 
     def check_go_right(self):
-        if self.cords[1]+1 < self.grid_quan +1:
+        if self.coords[1]+1 < self.grid_quan + 1:
             if self.check_right() < 1:
-                return self.visited[self.cords[0]][self.cords[1]+1]
+                return self.visited[self.coords[0]][self.coords[1]+1]
         return float('inf')
 
     def check_go_up(self):
-        if self.cords[0] > 0:
+        if self.coords[0] > 0:
             if self.check_up() < 1:
-                return self.visited[self.cords[0]-1][self.cords[1]]
+                return self.visited[self.coords[0]-1][self.coords[1]]
         return float('inf')
 
     def check_go_down(self):
-        if self.cords[0]+1 < self.grid_quan +1:
+        if self.coords[0]+1 < self.grid_quan + 1:
             if self.check_down() < 1:
-                return self.visited[self.cords[0]+1][self.cords[1]]
+                return self.visited[self.coords[0]+1][self.coords[1]]
         return float('inf')
 
     def check_mine_left(self):
-        if self.cords[1] > 0:
+        if self.coords[1] > 0:
             if self.check_left() == 1:
                 return True
-        return False       
+        return False
 
     def check_mine_right(self):
-        if self.cords[1]+1 < self.grid_quan:
+        if self.coords[1]+1 < self.grid_quan:
             if self.check_right() == 1:
                 return True
         return False
 
     def check_mine_up(self):
-        if self.cords[0] > 0:
+        if self.coords[0] > 0:
             if self.check_up() == 1:
                 return True
         return False
 
     def check_mine_down(self):
-        if self.cords[0]+1 < self.grid_quan:
+        if self.coords[0]+1 < self.grid_quan:
             if self.check_down() == 1:
                 return True
         return False
@@ -169,7 +171,7 @@ class Saper(object):
         for y in xrange(self.grid_quan + 1):
             for x in xrange(self.grid_quan + 1):
                 if self.flag_grid[x][y]:
-                    if self.flag_grid[x][y].color == self.grid[x][y].color:
+                    if self.flag_grid[x][y].colour == self.grid[x][y].colour:
                         self.grid[x][y] = BaseField()
                         detonated_mines += 1
                         self.knowledge_copy[x][y] = 0
@@ -177,11 +179,11 @@ class Saper(object):
         return detonated_mines
 
     def reset_position(self):
-        self.cords = [self.grid_quan, self.grid_quan]
+        self.coords = [self.grid_quan, self.grid_quan]
 
     def reset_health(self):
-        self.health = 1000
-        self.old_health = 1000
+        self.health = self.MAX_HEALTH
+        self.old_health = self.MAX_HEALTH
         self.knowledge_copy = deepcopy(self.grid_knowledge)
 
     def lose_health(self, damage):
@@ -189,23 +191,23 @@ class Saper(object):
         self.health -= damage
 
     def move(self):
-        if self.visited[self.cords[0]][self.cords[1]] == 0:
+        if self.visited[self.coords[0]][self.coords[1]] == 0:
             if self.am_i_on_mine():
-                self.grid_knowledge[self.cords[0]][self.cords[1]] = 1
+                self.grid_knowledge[self.coords[0]][self.coords[1]] = 1
             else:
-                self.grid_knowledge[self.cords[0]][self.cords[1]] = 0
-        self.visited[self.cords[0]][self.cords[1]] += 1
-        self.knowledge_copy[self.cords[0]][self.cords[1]] = 0
+                self.grid_knowledge[self.coords[0]][self.coords[1]] = 0
+        self.visited[self.coords[0]][self.coords[1]] += 1
+        self.knowledge_copy[self.coords[0]][self.coords[1]] = 0
 
-        neighbour_value = {'left':self.check_go_left(),
-                           'right':self.check_go_right(),
-                           'up':self.check_go_up(),
-                           'down':self.check_go_down()}
+        neighbour_value = {'left': self.check_go_left(),
+                           'right': self.check_go_right(),
+                           'up': self.check_go_up(),
+                           'down': self.check_go_down()}
 
-        neighbour_mines = {'left':self.check_mine_left(),
-                           'right':self.check_mine_right(),
-                           'up':self.check_mine_up(),
-                           'down':self.check_mine_down()}
+        neighbour_mines = {'left': self.check_mine_left(),
+                           'right': self.check_mine_right(),
+                           'up': self.check_mine_up(),
+                           'down': self.check_mine_down()}
 
         v1 = list(self.meters.values())
         k1 = list(self.meters.keys())
@@ -226,25 +228,8 @@ class Saper(object):
         elif direction == 'down':
             self.down()
 
-    def am_i_on_mine (self):
+    def am_i_on_mine(self):
         return self.health != self.old_health
 
     def set_meters(self, meters):
         self.meters = meters
-
-    def diplay_grid(self):
-        brzydki_grid = [[78 for r in xrange(self.grid_quan)]
-                         for c in xrange(self.grid_quan)]        
-        for row in xrange(self.grid_quan):
-            for column in xrange(self.grid_quan):
-                if self.grid[row][column].color == WHITE:
-                    brzydki_grid[row][column] = 0
-                elif self.grid[row][column].color == GREEN:
-                    brzydki_grid[row][column] = 1
-                elif self.grid[row][column].color == YELLOW:
-                    brzydki_grid[row][column] = 2
-                elif self.grid[row][column].color == RED:
-                    brzydki_grid[row][column] = 3
-                else:
-                    brzydki_grid[row][column] = 4
-        print brzydki_grid

@@ -16,7 +16,8 @@ class Scheme(object):
         return '{0:09b}'.format(self.scheme)
 
     def get_relative_pos(self):
-        array = [self.bin_scheme[i:i+3] for i in range(0, len(self.bin_scheme), 3)]
+        array = [
+            self.bin_scheme[i:i+3] for i in range(0, len(self.bin_scheme), 3)]
 
         pos = []
         for y in range(3):
@@ -55,7 +56,7 @@ class Scheme(object):
                     try:
                         if grid[x+i][y+j] == 0:
                             continue
-                        if grid[x+i][y+j].color == self.mine_class.color:
+                        if grid[x+i][y+j].colour == self.mine_class.colour:
                             return False
                     except IndexError:
                         pass
@@ -66,7 +67,7 @@ class Scheme(object):
 
 
 class BaseField(object):
-    color = WHITE
+    colour = WHITE
     damage = 0
 
     def __init__(self):
@@ -94,17 +95,17 @@ class BaseField(object):
 
 
 class RedMine(BaseField):
-    color = RED
+    colour = RED
     damage = 50
 
 
 class YellowMine(BaseField):
-    color = YELLOW
+    colour = YELLOW
     damage = 20
 
 
 class GreenMine(BaseField):
-    color = GREEN
+    colour = GREEN
     damage = 10
 
 
