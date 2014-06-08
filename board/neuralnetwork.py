@@ -12,8 +12,8 @@ class NeuralNetwork(object):
         self.display = disp
         self.saper = self.display.saper
         self.last_move_from = 'left'
-        self.visited = []
-        self.visited.append(self.saper.cords)
+        self.visited = set()
+        self.visited.add(tuple(self.saper.cords))
         self.demining()
 
     def demining(self):
@@ -35,11 +35,26 @@ class NeuralNetwork(object):
 
     def make_random_move(self):
         mover = {
-            'left', 'right', 'up', 'down'
+            'left': lambda x,y: (x, y-1),
+            'right': lambda x,y: (x, y+1),
+            'up': lambda x,y: (x-1, y),
+            'down': lambda x,y: (x+1, y),
         }
-        move = random.choice(['left', 'right', 'up', 'down'])
-        if self.
+
+        counter = 0
+        append = True
+        move = random.choice(mover.keys())
+        while mover[move](*self.saper.cords) in self.visited:
+            if counter > 8:
+                append = False
+                break
+            move = random.choice(mover.keys())
+            counter += 1
+
         getattr(self.saper, move)()
+        if append:
+            self.visited.add(tuple(self.saper.cords))
+        print self.visited
         self.last_move_from = move
 
 
