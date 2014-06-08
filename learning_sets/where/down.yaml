@@ -8,8 +8,8 @@ learning_set:
         -   move: right
         -   True
     -
-        -   move: up
+        -   move: down
         -   True
     -
-        -   move: down
+        -   move: up
         -   False

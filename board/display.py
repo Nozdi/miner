@@ -16,11 +16,7 @@ from mine import (
     YellowMine,
     RedMine,
 )
-from flag import (
-    RedFlag,
-    YellowFlag,
-    GreenFlag,
-)
+from saper import Saper
 from random import sample
 import pygame
 from copy import deepcopy
@@ -252,17 +248,13 @@ class Display(object):
                             self.no_of_mines -= self.saper.detonate()
                             self.compute_mines()
                         elif event.key == pygame.K_w:
-                            if self.saper.coords[0] > 0:
-                                self.saper.place_flag_up()
+                            self.saper.place_flag_up()
                         elif event.key == pygame.K_s:
-                            if self.saper.coords[0] < self.quantity-1:
-                                self.saper.place_flag_down()
+                            self.saper.place_flag_down()
                         elif event.key == pygame.K_a:
-                            if self.saper.coords[1] > 0:
-                                self.saper.place_flag_left()
+                            self.saper.place_flag_left()
                         elif event.key == pygame.K_d:
-                            if self.saper.coords[1] < self.quantity-1:
-                                self.saper.place_flag_right()
+                            self.saper.place_flag_right()
                         elif event.key == pygame.K_b:
                             self.bot_mode = True
                             self.bot_move = self.bot.run()
@@ -281,88 +273,3 @@ class Display(object):
 
         # sleep(2)
         pygame.quit()
-
-
-class Saper(object):
-
-    def __init__(self, grid_quan, name, grid, flag_grid):
-        self.grid = grid
-        self.flag_grid = flag_grid
-        self.grid_quan = grid_quan - 1
-        self.img = pygame.image.load('board/saper.png')
-        self.coords = [grid_quan-1, grid_quan-1]
-        self.name = name
-        self.health = 100
-        self.current_flag_colour = GREEN
-
-    def no_flag(self):
-        self.current_flag_colour = 0
-
-    def red_flag(self):
-        self.current_flag_colour = RED
-
-    def yellow_flag(self):
-        self.current_flag_colour = YELLOW
-
-    def green_flag(self):
-        self.current_flag_colour = GREEN
-
-    def left(self):
-        if self.coords[1] > 0:
-            self.coords[1] -= 1
-
-    def right(self):
-        if self.coords[1] < self.grid_quan:
-            self.coords[1] += 1
-
-    def up(self):
-        if self.coords[0] > 0:
-            self.coords[0] -= 1
-
-    def down(self):
-        if self.coords[0] < self.grid_quan:
-            self.coords[0] += 1
-
-    def place_flag_left(self):
-        self._place_flag([self.coords[0], self.coords[1] - 1])
-
-    def place_flag_right(self):
-        self._place_flag([self.coords[0], self.coords[1] + 1])
-
-    def place_flag_up(self):
-        self._place_flag([self.coords[0] - 1, self.coords[1]])
-
-    def place_flag_down(self):
-        self._place_flag([self.coords[0] + 1, self.coords[1]])
-
-    def _place_flag(self, coords):
-        if self.current_flag_colour == 0:
-            self.remove_flag(coords)
-        elif self.flag_grid[coords[0]][coords[1]] == 0 and self.no_of_flags > 0:
-            if self.current_flag_colour == GREEN:
-                flag = GreenFlag(coords)
-            elif self.current_flag_colour == YELLOW:
-                flag = YellowFlag(coords)
-            elif self.current_flag_colour == RED:
-                flag = RedFlag(coords)
-            self.flag_grid[coords[0]][coords[1]] = flag
-            self.no_of_flags -= 1
-
-    def remove_flag(self, coords):
-        if self.flag_grid[coords[0]][coords[1]] != 0:
-            self.no_of_flags += 1
-            self.flag_grid[coords[0]][coords[1]] = 0
-
-    def detonate(self):
-        detonated_mines = 0
-        for y in xrange(self.grid_quan + 1):
-            for x in xrange(self.grid_quan + 1):
-                if self.flag_grid[x][y]:
-                    if self.flag_grid[x][y].color == self.grid[x][y].color:
-                        self.grid[x][y] = BaseField()
-                        detonated_mines += 1
-                    self.flag_grid[x][y] = 0
-        return detonated_mines
-
-    def reset_position(self):
-        self.coords = [self.grid_quan, self.grid_quan]

@@ -11,5 +11,5 @@ learning_set:
         -   move: up
         -   True
     -
-        -   move: right
+        -   move: left
         -   False

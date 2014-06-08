@@ -5,11 +5,11 @@ possibilities:
 
 learning_set:
     -
-        -   move: right
-        -   True
-    -
         -   move: up
         -   True
     -
         -   move: left
+        -   True
+    -
+        -   move: right
         -   False

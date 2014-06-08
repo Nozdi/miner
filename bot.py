@@ -1,6 +1,7 @@
 from time import sleep
 from glob import glob
 from os import path
+from copy import deepcopy
 from algorithms import SymbolicLearningSystem
 from board.settings import RED, YELLOW, GREEN
 
@@ -30,15 +31,21 @@ class Bot(object):
         self.machine = learn_machine()
         self.moves = {
             'up': self.saper.up,
-            'down': self.saper.down,
             'left': self.saper.left,
             'right': self.saper.down,
+            'down': self.saper.down,
         }
         self.revese_moves = {
             'up': self.saper.down,
             'left': self.saper.right,
             'right': self.saper.left,
             'down': self.saper.up,
+        }
+        self.flag_moves = {
+            'up': self.saper.place_flag_up,
+            'left': self.saper.place_flag_left,
+            'right': self.saper.place_flag_right,
+            'down': self.saper.place_flag_down,
         }
         self.colors = {
             'red': RED,
@@ -50,16 +57,26 @@ class Bot(object):
             'yellow': self.saper.yellow_flag,
             'green': self.saper.green_flag,
         }
+        self.score = 0
+        self.colors_priority = [RED, YELLOW, GREEN]
         self.machine_to_functions()
 
     def machine_to_functions(self):
+        self.machine['where_place'] = deepcopy(self.machine['where'])
+
         flag_color = self.machine['flag_color']
         for key in flag_color:
-            flag_color[key] = self.flag[flag_color[key]['place_flag']]
+            color = flag_color.pop(key)
+            new_key = self.colors.get(key, 'none')
+            flag_color[new_key] = self.flag[color['place_flag']]
 
         where = self.machine['where']
         for key in where:
             where[key] = [self.moves[move['move']] for move in where[key]]
+
+        where = self.machine['where_place']
+        for key in where:
+            where[key] = [self.flag_moves[move['move']] for move in where[key]]
 
         place = self.machine['place']
         for key in place:
@@ -72,7 +89,30 @@ class Bot(object):
         sleep(0.3)
 
     def run(self):
-        print(self.display.radiations)
+        last_move = 'left'
+
+        # check if saper should put a flag
+        place_flags = False
+        if any([self.machine['place'] > val
+                for val in self.display.radiations.values()]):
+            place_flags = True
+
+        # putting flags
+        last_flag = 'none'
+        if place_flags:
+            for i in range(len(self.colors_priority)):
+                last_flag = self.machine['flag_color'][last_flag]()
+                if (self.display.radiations[last_flag] * 100 >
+                   self.machine['place'][last_flag]):
+                    for place in self.machine['where_place'][last_move]:
+                        yield self.move(place)
+
+                # detonation
+                mines = self.saper.detonate()
+                self.score += mines
+                self.display.no_of_mines -= mines
+                self.move(self.display.compute_mines)
+                yield
 
         for i in range(self.saper.grid_quan):
             yield self.move(self.saper.left)
