@@ -38,7 +38,7 @@ class Saper(object):
         self.img = pygame.image.load('board/saper.png')
         self.coords = [grid_quan-1, grid_quan-1]
         self.name = name
-        self.MAX_HEALTH = 200
+        self.MAX_HEALTH = 1000
         self.health = self.MAX_HEALTH
         self.old_health = self.MAX_HEALTH
         self.attempts = 0

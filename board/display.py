@@ -69,7 +69,7 @@ class Display(object):
 
         pygame.font.init()
         self.font = pygame.font.SysFont(
-            "comicsansms", max(self.quantity * 2/3, 25))
+            "comicsansms", max(self.quantity * 2/3, 15))
 
     def place_mines(self):
         for scheme in self.schemes:
