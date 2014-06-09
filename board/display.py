@@ -42,7 +42,7 @@ class Display(object):
         self.lifes = 3          # put here number of lifes for miner
         self.hide_mines = False
         self.done = False
-        self.no_of_schemes = (self.quantity**2)/30
+        self.no_of_schemes = (self.quantity**2)/60
         self.no_of_mines = self.no_of_schemes*9
         #self.no_of_flags = round((self.no_of_schemes *9)*1.1)
         self.schemes = [Scheme(no, mine) for no, mine in
@@ -51,7 +51,8 @@ class Display(object):
         self.grid_copy = deepcopy(self.grid)
         self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
         self.saper = Saper(quantity, name, self.grid_copy, self.flag_grid) # use here your bot name
-        self.saper.no_of_flags = round((self.no_of_schemes *9)*1.5)
+
+        self.saper.no_of_flags = round(self.no_of_mines * 2.5)
         self.compute_mines()
         self.compute_meters()
         self.initialize_pygame()
@@ -72,7 +73,7 @@ class Display(object):
 
     def place_mines(self):
         for scheme in self.schemes:
-            no = (self.quantity**2)/30
+            no = self.no_of_schemes
             # no = round(self.quantity/1.8)
             while no > 0:
                 while not scheme.place(self.grid):
@@ -222,7 +223,7 @@ class Display(object):
                     elif event.key == pygame.K_3:
                         self.saper.current_flag_colour = RED
                     elif event.key == pygame.K_q:
-                        self.no_of_mines -= self.saper.detonate()
+                        # self.no_of_mines -= self.saper.detonate()
                         self.compute_mines()
                     elif event.key == pygame.K_w:
                         if self.saper.cords[0] > 0:
@@ -254,7 +255,7 @@ class Display(object):
                     self.compute_mines()
                     self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
                     self.saper.no_of_flags = round((self.no_of_schemes *9)*1.5)
-                    self.no_of_mines = self.no_of_schemes *9
+                    self.no_of_mines = self.no_of_schemes * 9
                 self.saper.moved = False
 
                 self.draw_all()
