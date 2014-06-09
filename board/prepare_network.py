@@ -30,4 +30,5 @@ trainer.trainUntilConvergence(verbose=True,
                               dataset=trainingSet,
                               maxEpochs=100)
 
-pickle.dump(net, open('net.pkl', 'w'))
+# pickle.dump(net, open('net.pkl', 'w'))
+import ipdb; ipdb.set_trace()
