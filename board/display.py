@@ -27,6 +27,8 @@ import pygame
 from copy import deepcopy
 from time import sleep
 
+from math import sqrt
+
 
 class Display(object):
 
@@ -51,7 +53,7 @@ class Display(object):
         self.grid_copy = deepcopy(self.grid)
         self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
         self.saper = Saper(quantity, "player", self.grid_copy, self.flag_grid) # use here your bot name
-        self.saper.no_of_flags = round((self.no_of_schemes *9)*1.1)
+        self.saper.no_of_flags = round((self.no_of_schemes *9)*5)
         self.compute_mines()
         self.compute_meters()
         self.initialize_pygame()
@@ -104,6 +106,7 @@ class Display(object):
             for column in xrange(self.quantity):
                 # print self.grid_copy[row][column].radiation
                 self.grid_copy[row][column].compute_max()
+        self.compute_meters()
 
     def compute_meters(self):
         x, y = self.saper.cords
@@ -244,6 +247,7 @@ class Display(object):
                     self.grid_copy[row][column] = BaseField()
                     self.no_of_mines -= 1
                     self.compute_mines()
+                    self.compute_meters()
 
                 if self.saper.health <= 0:
                     self.lifes -= 1
@@ -258,9 +262,8 @@ class Display(object):
 
                 self.draw_all()
 
-            self.clock.tick(30)
+            self.clock.tick(150)
 
-        sleep(2)
         pygame.quit()
 
 
@@ -317,18 +320,21 @@ class Saper(object):
         self._place_flag([self.cords[0] + 1, self.cords[1]])
 
     def _place_flag(self, cords):
-        if self.current_flag_colour == 0:
-            self.remove_flag(cords)
-        elif self.flag_grid[cords[0]][cords[1]] == 0 and self.no_of_flags > 0:
-            if self.current_flag_colour == GREEN:
-                flag = GreenFlag(cords)
-            elif self.current_flag_colour == YELLOW:
-                flag = YellowFlag(cords)
-            elif self.current_flag_colour == RED:
-                flag = RedFlag(cords)
-            self.flag_grid[cords[0]][cords[1]] = flag
-            self.no_of_flags -= 1
-        self.moved = True
+        try:
+            if self.current_flag_colour == 0:
+                self.remove_flag(cords)
+            elif self.flag_grid[cords[0]][cords[1]] == 0 and self.no_of_flags > 0:
+                if self.current_flag_colour == GREEN:
+                    flag = GreenFlag(cords)
+                elif self.current_flag_colour == YELLOW:
+                    flag = YellowFlag(cords)
+                elif self.current_flag_colour == RED:
+                    flag = RedFlag(cords)
+                self.flag_grid[cords[0]][cords[1]] = flag
+                self.no_of_flags -= 1
+            self.moved = True
+        except IndexError:
+            pass
 
     def remove_flag(self, cords):
         if self.flag_grid[cords[0]][cords[1]] != 0:
