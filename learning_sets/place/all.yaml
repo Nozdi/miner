@@ -6,11 +6,11 @@ possibilities:
 
 learning_set:
     -
-        -   percent: 85
+        -   percent: 90
             color: red
         -   True
     -
-        -   percent: 85
+        -   percent: 90
             color: yellow
         -   True
     -
@@ -22,7 +22,7 @@ learning_set:
             color: green
         -   False
     -
-        -   percent: 85
+        -   percent: 90
             color: green
         -   True
     -

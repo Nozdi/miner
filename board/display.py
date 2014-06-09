@@ -48,7 +48,7 @@ class Display(object):
         self.grid_copy = deepcopy(self.grid)
         self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
         self.saper = Saper(quantity, "Symbolic_bot", self.grid_copy, self.flag_grid)
-        self.saper.no_of_flags = round((self.no_of_schemes * 9)*2.0)
+        self.saper.no_of_flags = round((self.no_of_schemes * 9)*2.5)
 
         #bot
         self.bot_mode = False
@@ -185,10 +185,13 @@ class Display(object):
         self.screen.fill(BLACK)
         self.draw_grid()
 
-        if self.lifes > 0:
+        if self.no_of_mines == 0:
+            self.draw_win()
+        elif self.lifes > 0:
             self.draw_menu()
         else:
             self.draw_gameover()
+
         pygame.display.flip()
 
     def draw_gameover(self):
@@ -197,6 +200,14 @@ class Display(object):
 
         name = self.font.render("GAME OVER".format(), True, RED)
         self.screen.blit(name, (self.width/50, 1))
+
+    def draw_win(self):
+        win_rect = pygame.Rect(0, 0, self.width, self.gameover_height)
+        pygame.draw.rect(self.screen, GREY, win_rect)
+
+        name = self.font.render("WIN".format(), True, GREEN)
+        self.screen.blit(name, (self.width/50, 1))
+
 
     def game(self):
         row, column = self.saper.coords
@@ -215,7 +226,7 @@ class Display(object):
             self.compute_mines()
             self.flag_grid = [[0 for r in xrange(self.quantity)]
                               for c in xrange(self.quantity)]
-            self.saper.no_of_flags = round((self.no_of_schemes * 9)*2)
+            self.saper.no_of_flags = round((self.no_of_schemes * 9)*2.5)
             self.no_of_mines = self.no_of_schemes * 9
 
         self.draw_all()
@@ -274,5 +285,6 @@ class Display(object):
                 self.game()
             self.clock.tick(20)
 
-        # sleep(2)
+        self.game()
+        sleep(2)
         pygame.quit()
