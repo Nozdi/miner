@@ -21,7 +21,7 @@ class Saper(object):
         self.img = pygame.image.load('board/saper.png')
         self.coords = [grid_quan-1, grid_quan-1]
         self.name = name
-        self.health = 100
+        self.health = 500
         self.current_flag_colour = GREEN
 
     def no_flag(self):

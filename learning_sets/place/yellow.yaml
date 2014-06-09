@@ -5,7 +5,7 @@ possibilities:
 
 learning_set:
     -
-        -   percent: 70
+        -   percent: 90
         -   True
     -
         -   percent: 100

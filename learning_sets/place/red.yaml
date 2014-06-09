@@ -5,10 +5,10 @@ possibilities:
 
 learning_set:
     -
-        -   percent: 60
+        -   percent: 85
         -   True
     -
-        -   percent: 70
+        -   percent: 40
         -   False
     -
         -   percent: 80

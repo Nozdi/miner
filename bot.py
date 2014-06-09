@@ -37,10 +37,10 @@ class Bot(object):
             'down': self.saper.down,
         }
         self.revese_moves = {
-            'up': self.saper.down,
-            'left': self.saper.right,
-            'right': self.saper.left,
-            'down': self.saper.up,
+            'up': 'down',
+            'left': 'right',
+            'right': 'left',
+            'down': 'up',
         }
         self.flag_moves = {
             'up': self.saper.place_flag_up,
@@ -58,6 +58,12 @@ class Bot(object):
             'yellow': self.saper.yellow_flag,
             'green': self.saper.green_flag,
         }
+        self.already_located = {
+            RED: [],
+            YELLOW: [],
+            GREEN: [],
+        }
+        self.palces_detonated = []
         self.score = 0
         self.colors_priority = [RED, YELLOW, GREEN]
         self.machine_to_functions()
@@ -78,13 +84,30 @@ class Bot(object):
 
         where = self.machine['where_place']
         for key in where:
-            where[key] = [self.flag_moves[move['move']] for move in where[key]]
+            where[key] = {move['move']: self.flag_moves[move['move']]
+                          for move in where[key]}
 
         place = self.machine['place']
         for key in place:
             before = place.pop(key)
             new_key = self.colors.get(key, 'all')
             place[new_key] = before['percent']/100.
+
+    def left(self):
+        if self.saper.coords[1] > 0:
+            return self.saper.coords[0], self.saper.coords[1] - 1
+
+    def right(self):
+        if self.saper.coords[1] < self.saper.grid_quan-1:
+            return self.saper.coords[0], self.saper.coords[1] + 1
+
+    def up(self):
+        if self.saper.coords[0] > 0:
+            return self.saper.coords[0] - 1, self.saper.coords[1]
+
+    def down(self):
+        if self.saper.coords[0] < self.saper.grid_quan-1:
+            return self.saper.coords[0] + 1, self.saper.coords[1]
 
     def move(self, method):
         method()
@@ -97,9 +120,8 @@ class Bot(object):
             YELLOW: 0,
             GREEN: 0,
         }
-
+        mines = 0
         while self.display.no_of_mines > 0 and self.saper.no_of_flags > 0:
-            percents_growing = False
             place_flags = False
 
             # check if saper should put a flag
@@ -114,30 +136,62 @@ class Bot(object):
                     last_flag = self.machine['flag_color'][last_flag]()
                     if (self.display.radiations[last_flag] >
                        self.machine['place'][last_flag]):
-                        for place in self.machine['where_place'][last_move]:
-                            yield self.move(place)
+                        move = self.machine['where_place'][last_move]
+                        if last_flag == GREEN:
+                            move = {
+                                last_move: move[last_move]
+                            }
+                        elif last_flag == YELLOW:
+                            move = {
+                                key: move[key]
+                                for key in random.sample(move.keys(), 2)
+                            }
+                        for place in move:
+                            coords_to_put = getattr(self, place)()
+                            if (coords_to_put and
+                               coords_to_put not in self.already_located[last_flag]
+                               and coords_to_put not in self.palces_detonated):
+                                print("Ostatni: {} wiec flaga: {}".format(last_move, place))
+                                self.already_located[last_flag].append(coords_to_put)
+                                yield self.move(move[place])
 
-                    # detonation
-                    mines = self.saper.detonate()
-                    self.score += mines
-                    self.display.no_of_mines -= mines
-                    self.move(self.display.compute_mines)
-                    yield
+                                # detonation
+                                mines = self.saper.detonate()
 
-            # check if percents are growing
+                                self.score += mines
+                                self.display.no_of_mines -= mines
+                                self.move(self.display.compute_mines)
+                                yield
+
+                                # remeber what was detonated
+                                if mines:
+                                    self.palces_detonated.append(coords_to_put)
+
+            # if there was a mine think one more time!
+            if mines:
+                mines = 0
+                continue
+
+            #percents growing
             if any([self.display.radiations[key] > last_percents[key]
                     for key in last_percents]):
-                percents_growing = True
-
-            if percents_growing:
                 key = random.choice(self.machine['where'][last_move].keys())
                 self.move(self.machine['where'][last_move][key])
+                print("Poprzedni: {} i rosnie wiec ide {}".format(last_move, key))
                 last_move = key
                 yield
-            else:
-                key = random.choice(self.moves.keys())
-                print(key)
+            #all percents falling
+            elif all([self.display.radiations[key] < last_percents[key]
+                      for key in last_percents]):
+                print("Cofam")
+                key = self.revese_moves[last_move]
                 self.move(self.moves[key])
                 last_move = key
                 yield
-
+            # constant situation - we don't know where we should go
+            else:
+                print("Random ruch")
+                key = random.choice(self.moves.keys())
+                self.move(self.moves[key])
+                last_move = key
+                yield

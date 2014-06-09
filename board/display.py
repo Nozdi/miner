@@ -38,7 +38,8 @@ class Display(object):
         self.lifes = 3          # put here number of lifes for miner
         self.hide_mines = False
         self.done = False
-        self.no_of_schemes = (self.quantity**2)/30
+
+        self.no_of_schemes = (self.quantity**2)/20
         self.no_of_mines = self.no_of_schemes*9
         #self.no_of_flags = round((self.no_of_schemes *9)*1.1)
         self.schemes = [Scheme(no, mine) for no, mine in
@@ -47,7 +48,7 @@ class Display(object):
         self.grid_copy = deepcopy(self.grid)
         self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
         self.saper = Saper(quantity, "Symbolic_bot", self.grid_copy, self.flag_grid)
-        self.saper.no_of_flags = round((self.no_of_schemes * 9)*1.7)
+        self.saper.no_of_flags = round((self.no_of_schemes * 9)*2.0)
 
         #bot
         self.bot_mode = False
@@ -73,7 +74,8 @@ class Display(object):
 
     def place_mines(self):
         for scheme in self.schemes:
-            no = (self.quantity**2)/30
+            no = self.no_of_schemes
+            # no = (self.quantity**2)/30
             # no = round(self.quantity/1.8)
             while no > 0:
                 while not scheme.place(self.grid):
@@ -207,13 +209,13 @@ class Display(object):
 
         if self.saper.health <= 0:
             self.lifes -= 1
-            self.saper.health = 100
+            self.saper.health = 500
             self.saper.reset_position()
             self.grid_copy = deepcopy(self.grid)
             self.compute_mines()
             self.flag_grid = [[0 for r in xrange(self.quantity)]
                               for c in xrange(self.quantity)]
-            self.saper.no_of_flags = round((self.no_of_schemes * 9)*1.7)
+            self.saper.no_of_flags = round((self.no_of_schemes * 9)*2)
             self.no_of_mines = self.no_of_schemes * 9
 
         self.draw_all()
