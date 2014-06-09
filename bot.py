@@ -4,6 +4,7 @@ from os import path
 from copy import deepcopy
 from algorithms import SymbolicLearningSystem
 from board.settings import RED, YELLOW, GREEN
+import random
 
 BASEDIR = "./learning_sets"
 
@@ -72,7 +73,8 @@ class Bot(object):
 
         where = self.machine['where']
         for key in where:
-            where[key] = [self.moves[move['move']] for move in where[key]]
+            where[key] = {move['move']: self.moves[move['move']]
+                          for move in where[key]}
 
         where = self.machine['where_place']
         for key in where:
@@ -82,37 +84,59 @@ class Bot(object):
         for key in place:
             before = place.pop(key)
             new_key = self.colors.get(key, 'all')
-            place[new_key] = before['percent']
+            place[new_key] = before['percent']/100.
 
     def move(self, method):
         method()
-        sleep(0.3)
+        sleep(0.01)
 
     def run(self):
         last_move = 'left'
+        last_percents = {
+            RED: 0,
+            YELLOW: 0,
+            GREEN: 0,
+        }
 
-        # check if saper should put a flag
-        place_flags = False
-        if any([self.machine['place'] > val
-                for val in self.display.radiations.values()]):
-            place_flags = True
+        while self.display.no_of_mines > 0:
+            percents_growing = False
+            place_flags = False
 
-        # putting flags
-        last_flag = 'none'
-        if place_flags:
-            for i in range(len(self.colors_priority)):
-                last_flag = self.machine['flag_color'][last_flag]()
-                if (self.display.radiations[last_flag] * 100 >
-                   self.machine['place'][last_flag]):
-                    for place in self.machine['where_place'][last_move]:
-                        yield self.move(place)
+            # check if saper should put a flag
+            if any([val > self.machine['place']['all']
+                    for val in self.display.radiations.values()]):
+                place_flags = True
 
-                # detonation
-                mines = self.saper.detonate()
-                self.score += mines
-                self.display.no_of_mines -= mines
-                self.move(self.display.compute_mines)
+            # putting flags
+            last_flag = 'none'
+            if place_flags:
+                for i in range(len(self.colors_priority)):
+                    last_flag = self.machine['flag_color'][last_flag]()
+                    if (self.display.radiations[last_flag] >
+                       self.machine['place'][last_flag]):
+                        for place in self.machine['where_place'][last_move]:
+                            yield self.move(place)
+
+                    # detonation
+                    mines = self.saper.detonate()
+                    self.score += mines
+                    self.display.no_of_mines -= mines
+                    self.move(self.display.compute_mines)
+                    yield
+
+            # check if percents are growing
+            if any([self.display.radiations[key] > last_percents[key]
+                    for key in last_percents]):
+                percents_growing = True
+
+            if percents_growing:
+                key = random.choice(self.machine['where'][last_move].keys())
+                self.move(self.machine['where'][last_move][key])
+                last_move = key
+                yield
+            else:
+                key = random.choice(self.moves.keys())
+                self.move(self.moves[key])
+                last_move = key
                 yield
 
-        for i in range(self.saper.grid_quan):
-            yield self.move(self.saper.left)
