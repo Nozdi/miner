@@ -47,7 +47,7 @@ class Display(object):
         self.grid_copy = deepcopy(self.grid)
         self.flag_grid = [[0 for r in xrange(self.quantity)] for c in xrange(self.quantity)]
         self.saper = Saper(quantity, "Symbolic_bot", self.grid_copy, self.flag_grid)
-        self.saper.no_of_flags = round((self.no_of_schemes * 9)*1.1)
+        self.saper.no_of_flags = round((self.no_of_schemes * 9)*1.7)
 
         #bot
         self.bot_mode = False
@@ -213,7 +213,7 @@ class Display(object):
             self.compute_mines()
             self.flag_grid = [[0 for r in xrange(self.quantity)]
                               for c in xrange(self.quantity)]
-            self.saper.no_of_flags = round((self.no_of_schemes * 9)*1.1)
+            self.saper.no_of_flags = round((self.no_of_schemes * 9)*1.7)
             self.no_of_mines = self.no_of_schemes * 9
 
         self.draw_all()
@@ -267,6 +267,7 @@ class Display(object):
                     next(self.bot_move)
                 except StopIteration:
                     print("Bot nie wie co dalej :(")
+                    print("Punkty bota: {}".format(self.bot.score))
                     break
                 self.game()
             self.clock.tick(20)

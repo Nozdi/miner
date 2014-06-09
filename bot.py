@@ -33,7 +33,7 @@ class Bot(object):
         self.moves = {
             'up': self.saper.up,
             'left': self.saper.left,
-            'right': self.saper.down,
+            'right': self.saper.right,
             'down': self.saper.down,
         }
         self.revese_moves = {
@@ -98,7 +98,7 @@ class Bot(object):
             GREEN: 0,
         }
 
-        while self.display.no_of_mines > 0:
+        while self.display.no_of_mines > 0 and self.saper.no_of_flags > 0:
             percents_growing = False
             place_flags = False
 
@@ -136,6 +136,7 @@ class Bot(object):
                 yield
             else:
                 key = random.choice(self.moves.keys())
+                print(key)
                 self.move(self.moves[key])
                 last_move = key
                 yield
