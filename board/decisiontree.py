@@ -140,7 +140,7 @@ class DecisionTree(object):
                     else:
                         d = self.tree(GREEN, self.history)
                         if d == 1:
-                            e = self.tree(RED, self,history)
+                            e = self.tree(RED, self.history)
                             if e == 1:
                                 b = 0
                                 break
@@ -160,7 +160,7 @@ class DecisionTree(object):
                         else:
                             h = self.tree(GREEN, self.history)
                             if h == 1:
-                                i = self.tree(RED, self,history)
+                                i = self.tree(RED, self.history)
                                 if i == 1:
                                     b = 0
                                     break
