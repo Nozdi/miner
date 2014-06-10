@@ -101,7 +101,7 @@ class SymbolicLearningSystem(object):
     def maximal_specific(self):
         return self.find_by_true(max, self.specific)
 
-    def specialize(self, example):
+    def generalize(self, example):
         #Elements of G that classify example as negative are removed from G
         self.general = [
             elem for elem in self.general
@@ -122,8 +122,10 @@ class SymbolicLearningSystem(object):
 
         # Remove more general hypotheses than others from S;
         self.specific = self.maximal_specific()
+        print "Hipoteza specyficzna: ", self.specific
+        print "Hipoteza ogolna: ", self.general
 
-    def generalize(self, example):
+    def specialize(self, example):
         #Elements of S that classify example as positive are removed from S;
         self.specific = [
             elem for elem in self.specific
@@ -146,15 +148,22 @@ class SymbolicLearningSystem(object):
         # Remove less general hypotheses than others from S;
         self.general = self.find_minimal_general()
 
+        print "Hipoteza specyficzna: ", self.specific
+        print "Hipoteza ogolna: ", self.general
+
     def learn(self):
         """
         eliminate candidates algorithm
         """
+        print "Hipoteza specyficzna: ", self.specific
+        print "Hipoteza ogolna: ", self.general
         for example, right in self.learning_set:
             if right:
-                self.specialize(example)
-            else:
+                print "Przyklad prawidzwy: generalizuje"
                 self.generalize(example)
+            else:
+                print "Przyklad negatywny: specjalizuje"
+                self.specialize(example)
 
         if not self.specific:
             return self.general
@@ -211,8 +220,9 @@ if __name__ == '__main__':
     ]
 
     # sls = SymbolicLearningSystem(possibilities, learning_set)
-    sls = SymbolicLearningSystem.from_yamls("learning_sets/possibilities.yaml",
-                                            "learning_sets/learning_set.yaml")
+    # sls = SymbolicLearningSystem.from_yamls("learning_sets/possibilities.yaml",
+    #                                         "learning_sets/learning_set.yaml")
+    sls = SymbolicLearningSystem.from_yaml("learning_sets/place/all.yaml")
     sls.learn()
     # print "General: ", sls.general
     # print "Specific: ", sls.specific

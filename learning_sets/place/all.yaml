@@ -15,20 +15,17 @@ learning_set:
         -   True
     -
         -   percent: 80
-            color: yellow
-        -   False
-    -
-        -   percent: 80
             color: green
         -   False
-    -
-        -   percent: 90
-            color: green
-        -   True
-    -
-        -   percent: 50
-            color: red
-        -   False
-
-
-
+    # -
+    #     -   percent: 80
+    #         color: green
+    #     -   False
+    # -
+    #     -   percent: 90
+    #         color: green
+    #     -   True
+    # -
+    #     -   percent: 50
+    #         color: red
+    #     -   False

@@ -39,7 +39,7 @@ class Display(object):
         self.hide_mines = False
         self.done = False
 
-        self.no_of_schemes = (self.quantity**2)/20
+        self.no_of_schemes = (self.quantity**2)/25
         self.no_of_mines = self.no_of_schemes*9
         #self.no_of_flags = round((self.no_of_schemes *9)*1.1)
         self.schemes = [Scheme(no, mine) for no, mine in
